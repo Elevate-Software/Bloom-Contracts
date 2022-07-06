@@ -1,30 +1,19 @@
-# Dapp tools by DappHub [![Chat](https://img.shields.io/badge/community-chat-blue.svg?style=flat-square)](https://dapphub.chat)
+# Bloom Finance
 
-Hello!
+## Introduction
 
-`dapptools` is a suite of Ethereum focused CLI tools following the Unix design philosophy,
-favoring composability, configurability and extensibility.
+### What is Bloom?
 
-This repository contains the source code for several programs
-hand-crafted and maintained by DappHub, along with dependency management, courtesy of Nix.
+Bloom is a Real Estate Investment Trust or REIT that allows investors to invest in both crypto currency and fiat. Like any other REIT, Bloom invests in Real Estate and leases space and collects rent on it's properties. The company generates income which is then paid out to shareholders.
 
-- [dapp](./src/dapp) - All you need Ethereum development tool. Build, test, fuzz, formally verify, debug & deploy solidity contracts.
-- [seth](./src/seth) - Ethereum CLI. Query contracts, send transactions, follow logs, slice & dice data.
-- [hevm](./src/hevm) - Testing oriented EVM implementation. Debug, fuzz, or symbolically execute code against local or mainnet state.
-- [ethsign](./src/ethsign) - Sign Ethereum transactions from a local keystore or hardware wallet.
+This repository contains the source code for the smart contracts that make up the Bloom Finance Protocol.
 
-## Development Status
+- [Treasury](./src/Treasury.sol) - The Treasury contract will be the focal point within the protocol in which all assets will flow. This contract will keep track of all accounting within the protocol. It will account for all assets, investors, and dividends for all projects within the Bloom Project.
+  
+- [SwapInterface](./src/SwapInterface.sol) - The SwapInterface.sol file will be in charge of incoming assets and will use curve protocol to swap the incoming asset to USDC. It will then send the asset to the Treasury where it's accounted for. This contract will be the direct contract being interfaced by the Investor UI.
+  
+- [BloomToken](./src/BloomToken.sol) - This contract will be used to mint investors "soulbound" tokens which will act as their receipt for investing into the fund. The investor will be minted the USD equivalent of their investment in BLOOM tokens.
 
-dapptools is currently in a stage of clandestine development where support for the casual user may
-be deprived. The software can now be considered free as in free puppy. Users seeking guidance can
-explore using foundry as an alternative
+**NOTE:** This framework is [dapptools](https://github.com/dapphub/dapptools), a suite of Ethereum focused CLI tools following the Unix design philosophy, favoring composability, configurability and extensibility. If you do not have dapptools installed, please locate the dapptools github repo and follow the installation instructions.
 
-## Installation
-
-Install Nix if you haven't already ([instructions](https://nixos.org/download.html)). Then install dapptools:
-
-```
-curl https://dapp.tools/install | sh
-```
-
-This configures the dapphub binary cache and installs the `dapp`, `solc`, `seth` and `hevm` executables.
+[![Homepage](https://img.shields.io/badge/Elevate%20Software-Homepage-brightgreen)](https://www.elevatesoftware.io/)
