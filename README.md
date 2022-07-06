@@ -1,8 +1,6 @@
 # Bloom Finance
 
-## Introduction
-
-### What is Bloom?
+## What is Bloom?
 
 Bloom is a Real Estate Investment Trust or REIT that allows investors to invest in both crypto currency and fiat. Like any other REIT, Bloom invests in Real Estate and leases space and collects rent on it's properties. The company generates income which is then paid out to shareholders.
 
