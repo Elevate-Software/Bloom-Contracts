@@ -16,6 +16,7 @@ import "./OpenZeppelin/Ownable.sol";
 ///          - Are we keeping track of projects or just investments?
 ///          - How do we know which wallets are finished receiving dividends?
 ///          - How will funds be deposited for dividends?
+///          - Will we ever remove data from the mappings: ie, how does a project end.
 contract Treasury is Ownable {
 
     // ---------------

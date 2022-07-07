@@ -12,6 +12,7 @@ import "./OpenZeppelin/Ownable.sol";
 ///         Only whitelisted wallets can invest into the protocol.
 ///         To Be Determinted:
 ///          - Take a fee?
+///          - Will we ever remove data from the mappings: ie, how does a project end?
 contract SwapInterface is Ownable{
 
     // ---------------
