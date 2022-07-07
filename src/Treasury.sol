@@ -14,6 +14,8 @@ import "./OpenZeppelin/Ownable.sol";
 ///         To be determined:
 ///          - What values we need to return for front end?
 ///          - Are we keeping track of projects or just investments?
+///          - How do we know which wallets are finished receiving dividends?
+///          - How will funds be deposited for dividends?
 contract Treasury is Ownable {
 
     // ---------------
@@ -34,7 +36,7 @@ contract Treasury is Ownable {
         DividendReceipt[] dividendLibrary;
     }
 
-    /// TODO: Will
+    /// TODO: NatSpec
     /// @notice this does this
     /// @param 
     /// @param
@@ -43,7 +45,7 @@ contract Treasury is Ownable {
         uint timeUnix;
     }
 
-    /// TODO: Marcus
+    /// TODO: NatSpec
     struct DividendReceipt {
         uint dividendPaid;
         uint timeUnix;
@@ -68,14 +70,17 @@ contract Treasury is Ownable {
     // Events
     // ------
 
-    // TODO: Add any necessary events.
-
+    // TODO: Add any necessary events. An event is simply a log that takes place
+    //       when something in the contract happens we feel is important enough to emit it.
+    //       https://www.tutorialspoint.com/solidity/solidity_events.htm
+    
     // ---------
     // Modifiers
     // ---------
 
-    // TODO: isAuthorized modifier goes here.
-
+    // TODO: Add a modifier called isAuthorizedUser that checks to see if msg.sender is an authorizedUser.
+    //       https://www.tutorialspoint.com/solidity/solidity_function_modifiers.htm
+    
     // ---------
     // Functions
     // ---------
@@ -108,18 +113,33 @@ contract Treasury is Ownable {
 
     }
 
+    /// @notice Withdraws asset to owner wallet.
+    /// @param _token is the contract address of token we want to withdraw.
+    function safeWithdraw(address _token) public onlyOwner() {
+
+    }
+
+    /// @notice Deposit assets into the contract
+    /// @param _token is the contract address of token we want to withdraw.
+    function safeDeposit(address _token) public onlyOwner() {
+
+    }
+
+    /// TODO: Setup contract for dividend payouts. Do this by adding
+    ///       a function called payDividend() include NatSpec.
+
+    /// TODO: add updateStableCurrency() function which updates _stableCurrency.
+
+    /// TODO: add depositDividends() function which allows a manual deposit
+    ///       of funds into the contract
+
+
     // ~ View Functions ~
 
     /// @notice Should return contract balance of stableCurrency.
-    /// @return uint Amount of stableCurrency is inside contract.
+    /// @return uint Amount of stableCurrency that is inside contract.
     function balanceOfStableCurrency() public view returns (uint) {
 
     }
 
-    /// TODO: Add necessary view functions.
-    /// @dev Think about what values in here are important that need to be viewed later on.
-
-    /// TODO: Setup contract for dividend payouts.
-    /// TODO: add updateStableCurrency variable.
-    /// TODO: have a safeWithdraw
 }

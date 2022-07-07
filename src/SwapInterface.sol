@@ -66,11 +66,12 @@ contract SwapInterface is Ownable{
     // Functions
     // ---------
 
-    // TODO: 
+    // TODO: add these functions along with it's NatSpec
     // add wallet to whitelist
-    // invest()
+    // invest() -> should only be called if whitelisted
     // swap function -> uses CRV
     // change stableCurrency -> onlyOwner
     // disable/enable contract -> onlyOwner
     // update token whitelist
+    // balanceOf stableCurrency
 }
