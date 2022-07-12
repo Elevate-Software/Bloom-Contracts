@@ -24,6 +24,8 @@ contract Treasury is Ownable {
     // ---------------
 
     address public stableCurrency;                               /// @notice Used to store address of coin used to deposit/payout from Treasury.
+    address public swapInterfaceContract;                        /// @notice Used to store the address of SwapInterface.sol
+
     mapping(address => InvestorData) private investorLibrary;    /// @notice Mapping of Investor wallets to their investment data held in InvestorData.
     mapping(address => bool) public isAuthorizedUser;            /// @notice isAuthorizedUser[address] returns true if wallet is authorized;
 
@@ -60,9 +62,11 @@ contract Treasury is Ownable {
     /// @notice Initializes Treasury.sol 
     /// @param _stableCurrency Used to store address of stablecoin used in contract (default is USDC).
     constructor (
-        address _stableCurrency
+        address _stableCurrency,
+        address _swapInterface
     ) {
         stableCurrency = _stableCurrency;
+        swapInterfaceContract = _swapInterface;
 
         transferOwnership(msg.sender);
         isAuthorizedUser[msg.sender] = true;
@@ -75,6 +79,8 @@ contract Treasury is Ownable {
     // TODO: Add any necessary events. An event is simply a log that takes place
     //       when something in the contract happens we feel is important enough to emit it.
     //       https://www.tutorialspoint.com/solidity/solidity_events.htm.
+
+    event StableCoinReceived(address indexed wallet, uint amount);
     
     // ---------
     // Modifiers
@@ -82,6 +88,11 @@ contract Treasury is Ownable {
 
     // TODO: Add a modifier called isAuthorizedUser that checks to see if msg.sender is an authorizedUser.
     //       https://www.tutorialspoint.com/solidity/solidity_function_modifiers.htm.
+
+    modifier isSwapInterface {
+        require(msg.sender == swapInterfaceContract, "Treasury.sol::isSwapInterface() msg.sender != SwapInterface.sol");
+        _;
+    }
     
      
     // ---------
@@ -99,10 +110,16 @@ contract Treasury is Ownable {
 
     }
 
+    /// TODO:   Add SwapInterface modifier.
     /// @notice Updates investment values when an investment is made through Dapp.
     /// @dev    Should only be called by SwapInterface.sol.
-    function updateStableReceived() public {
-
+    /// @param _wallet account making an investment.
+    /// @param _amount amount of stable coin received from account.
+    /// @param _timeUnix time unix of when investment occured.
+    function updateStableReceived(address _wallet, uint _amount, uint _timeUnix) external isSwapInterface() {
+        emit StableCoinReceived(_wallet, _amount);
+        investorLibrary[_wallet].totalAmountInvested += _amount;
+        investorLibrary[_wallet].investmentLibrary.push(InvestmentReceipt(_amount, _timeUnix));
     }
 
     /// @notice Mints BLOOM tokens to a certain investor.
@@ -137,6 +154,12 @@ contract Treasury is Ownable {
     /// @param _stableCurrency stores stableCurrency.
     function updateStableCurrency(address _stableCurrency) public onlyOwner() {
         stableCurrency = _stableCurrency;
+    }
+
+    /// @notice updates swapInterfaceContract.
+    /// @param _newSwapInterface stores contract address of SwapInterface.sol.
+    function updateSwapInterface(address _newSwapInterface) public onlyOwner() {
+        swapInterfaceContract = _newSwapInterface;
     }
 
     /// @notice deposits dividend payment to a depository.

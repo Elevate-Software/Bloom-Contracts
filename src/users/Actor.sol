@@ -23,5 +23,9 @@ contract Actor {
     //     (ok,) = address(token).call(abi.encodeWithSignature(sig, to, amt));
     // }
 
+    function try_updateStableReceived(address treasury, address wallet, uint amount, uint timeUnix) external returns (bool ok) {
+        string memory sig = "updateStableReceived(address,uint,uint)";
+        (ok,) = address(treasury).call(abi.encodeWithSignature(sig, wallet, amount, timeUnix));
+    }
     
 }
