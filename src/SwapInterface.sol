@@ -61,7 +61,11 @@ contract SwapInterface is Ownable{
     // Modifiers
     // ---------
 
-    // TODO: isAuthorized modifier goes here.
+    /// @notice Only authorized users can call functions with this modifier.
+    modifier isAuthorized() {
+        
+        _;
+    }
 
     // ---------
     // Functions
