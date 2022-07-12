@@ -26,7 +26,8 @@ contract Treasury is Ownable {
     address public stableCurrency;                               /// @notice Used to store address of coin used to deposit/payout from Treasury.
     address public swapInterfaceContract;                        /// @notice Used to store the address of SwapInterface.sol
 
-    mapping(address => InvestorData) private investorLibrary;    /// @notice Mapping of Investor wallets to their investment data held in InvestorData.
+    // TODO: Consider making investorLibrary private -> write get functions for investorData points
+    mapping(address => InvestorData) public investorLibrary;    /// @notice Mapping of Investor wallets to their investment data held in InvestorData.
     mapping(address => bool) public isAuthorizedUser;            /// @notice isAuthorizedUser[address] returns true if wallet is authorized;
 
     /// @notice Investor struct is used to track data points of investments made by investors.
@@ -116,7 +117,7 @@ contract Treasury is Ownable {
     /// @param _wallet account making an investment.
     /// @param _amount amount of stable coin received from account.
     /// @param _timeUnix time unix of when investment occured.
-    function updateStableReceived(address _wallet, uint _amount, uint _timeUnix) external isSwapInterface() {
+    function updateStableReceived(address _wallet, uint _amount, uint _timeUnix) public isSwapInterface{
         emit StableCoinReceived(_wallet, _amount);
         investorLibrary[_wallet].totalAmountInvested += _amount;
         investorLibrary[_wallet].investmentLibrary.push(InvestmentReceipt(_amount, _timeUnix));
@@ -124,7 +125,7 @@ contract Treasury is Ownable {
 
     /// @notice Mints BLOOM tokens to a certain investor.
     /// @dev    Calls BloomToken.sol::mint().
-    function mintBloom() public {
+    function mintBloom(address _wallet, uint _amount) external isSwapInterface() {
 
     }
 
@@ -177,4 +178,15 @@ contract Treasury is Ownable {
 
     }
 
+    function getInvestorData(address _wallet) public view returns (InvestorData memory) {
+        return investorLibrary[_wallet];
+    }
+
+    function getInvestmentLibrary(address _wallet) public view returns (InvestmentReceipt[] memory) {
+        return investorLibrary[_wallet].investmentLibrary;
+    }
+
+    function getDividendLibrary(address _wallet) public view returns (DividendReceipt[] memory) {
+        return investorLibrary[_wallet].dividendLibrary;
+    }
 }
