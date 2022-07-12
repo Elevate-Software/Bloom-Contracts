@@ -36,19 +36,17 @@ contract Treasury is Ownable {
         DividendReceipt[] dividendLibrary;
     }
 
-    /// TODO: NatSpec
-    /// @notice InvestmentReceipt is used to track the amount invested by an indiviual investor and the date/time each transaction occurs.
+    /// @notice InvestmentReceipt is used to track the amount invested by an indiviual investor and the time unix each transaction occurs.
     /// @param amountInvested Stores the amount an individual invest.
-    /// @param timeUnix Stores the date/time when transaction occured.
+    /// @param timeUnix Stores the timestamp when transaction occured.
     struct InvestmentReceipt {
         uint amountInvested;
         uint timeUnix;
     }
 
-    /// TODO: NatSpec
-    /// @notice Dividend Struct is used to track the amount of dividends an investor is paid and the date/time each transaction occurs.
+    /// @notice Dividend Struct is used to track the amount of dividends an investor is paid and the timestamp each transaction occurs.
     /// @param dividendPaid Stores the amount of dividends paid to an investor.
-    /// @param timeUnix Stores the date/time transaction occured.
+    /// @param timeUnix Stores the timestamp transaction occured.
     struct DividendReceipt {
         uint dividendPaid;
         uint timeUnix;
@@ -90,7 +88,6 @@ contract Treasury is Ownable {
     // ---------
 
     /// @notice Withdraw stableCurrency from contract to a Circle acc.
-    /// @dev 
     function withdrawToCircle() public {
 
     }
@@ -130,27 +127,20 @@ contract Treasury is Ownable {
 
     }
 
-    /// TODO: Setup contract for dividend payouts. Do this by adding
-    /// a function called payDividend() include NatSpec.
     /// @notice Pays dividends to the investor.
-    /// @param _dividends is the contact address of where we want to send the dividend payout to.
-    function payDividend(address _dividends) public payable returns(uint) {
+    function payDividends() public onlyOwner() returns(uint) {
 
     }
 
-    /// TODO: add updateStableCurrency() function which updates _stableCurrency.
     /// @notice updates stablecurrency to _stablecurrency.
     /// @param _stableCurrency stores stableCurrency.
-    function updateStableCurrency(address _stableCurrency) public {
+    function updateStableCurrency(address _stableCurrency) public onlyOwner() {
         stableCurrency = _stableCurrency;
     }
 
-    /// TODO: add depositDividends() function which allows a manual deposit
-    ///       of funds into the contract
     /// @notice deposits dividend payment to a depository.
-    /// @param  dividendWallet stores the wallet address for the dividends to be directed to.
-    /// @param dividendDepository stores the amount of dividends to be paid to an investor.
-    function depositDividends(address dividendWallet, uint dividendDepository) public {
+    /// @param  _amntDividends stores the amount of dividends to be paid to an investor.
+    function depositDividends(uint _amntDividends) public onlyOwner() {
 
     }
 
