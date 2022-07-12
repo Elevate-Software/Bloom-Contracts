@@ -75,4 +75,55 @@ contract SwapInterface is Ownable{
     // disable/enable contract -> onlyOwner
     // update token whitelist
     // balanceOf stableCurrency
+
+    /// TODO: Should we have a remove wallet from whitelist?
+    /// @notice Adds a wallet to the whitelist.
+    /// @param _address The wallet to add to the whitelist.
+    function addWalletToWhitelist(address _address) public onlyOwner() {
+
+    }
+
+    /// @notice Allows user to invest tokens into the REIT.
+    /// @param amount The amount of the token being invested.
+    /// @param token The address of the token being invested.
+    function invest(uint amount, address token) public {
+
+    }
+
+    /// @notice Calls the Curve API to swap incoming assets to USDC.
+    /// TODO: Still trying to understand how this one will work, not sure what the inputs will be.
+    function swap() public {
+
+    }
+
+    /// @notice Changes the stable currency address.
+    /// @param newAddress The new stable currency contact address.
+    function changeStableCurrency(address newAddress) public onlyOwner() {
+
+    }
+
+    /// @notice Allows owner to disable smart contract operations. (can these be external?)
+    function disableContract() public onlyOwner() {
+
+    }
+
+    /// @notice Allows owner to re-enable contract if disabled.
+    function enableContract() public onlyOwner() {
+
+    }
+
+    /// @notice Updates which tokens are accepted for investments.
+    /// @param tokenAddress The contact address for the token we are updating.
+    /// @param allow true to accept investments of this token, false to decline.
+    function updateTokenWhitelist(address tokenAddress, bool allow) public onlyOwner() {
+
+    }
+
+    // ~ View Functions ~
+
+    /// @notice Should return contract balance of stableCurrency.
+    /// @return uint Amount of stableCurrency that is inside contract.
+    function balanceOfStableCurrency() public view returns (uint) {
+
+    }
 }
