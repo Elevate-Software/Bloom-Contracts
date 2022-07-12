@@ -26,7 +26,7 @@ contract Treasury is Ownable {
     mapping(address => InvestorData) private investorLibrary;    /// @notice Mapping of Investor wallets to their investment data held in InvestorData.
     mapping(address => bool) public isAuthorizedUser;            /// @notice isAuthorizedUser[address] returns true if wallet is authorized;
 
-    /// @notice Investor srtruct is used to track data points of investments made by investors.
+    /// @notice Investor struct is used to track data points of investments made by investors.
     /// @param amountInvested Tracks USD-stablecoin equivalent to investment made.
     /// @param dividendsReceived Tracks dividends received by investor in stablecoin.
     struct InvestorData {
@@ -37,15 +37,18 @@ contract Treasury is Ownable {
     }
 
     /// TODO: NatSpec
-    /// @notice this does this
-    /// @param 
-    /// @param
+    /// @notice InvestmentReceipt is used to track the amount invested by an indiviual investor and the date/time each transaction occurs.
+    /// @param amountInvested Stores the amount an individual invest.
+    /// @param timeUnix Stores the date/time when transaction occured.
     struct InvestmentReceipt {
         uint amountInvested;
         uint timeUnix;
     }
 
     /// TODO: NatSpec
+    /// @notice Dividend Struct is used to track the amount of dividends an investor is paid and the date/time each transaction occurs.
+    /// @param dividendPaid Stores the amount of dividends paid to an investor.
+    /// @param timeUnix Stores the date/time transaction occured.
     struct DividendReceipt {
         uint dividendPaid;
         uint timeUnix;
@@ -72,20 +75,22 @@ contract Treasury is Ownable {
 
     // TODO: Add any necessary events. An event is simply a log that takes place
     //       when something in the contract happens we feel is important enough to emit it.
-    //       https://www.tutorialspoint.com/solidity/solidity_events.htm
+    //       https://www.tutorialspoint.com/solidity/solidity_events.htm.
     
     // ---------
     // Modifiers
     // ---------
 
     // TODO: Add a modifier called isAuthorizedUser that checks to see if msg.sender is an authorizedUser.
-    //       https://www.tutorialspoint.com/solidity/solidity_function_modifiers.htm
+    //       https://www.tutorialspoint.com/solidity/solidity_function_modifiers.htm.
     
+     
     // ---------
     // Functions
     // ---------
 
     /// @notice Withdraw stableCurrency from contract to a Circle acc.
+    /// @dev 
     function withdrawToCircle() public {
 
     }
@@ -126,12 +131,28 @@ contract Treasury is Ownable {
     }
 
     /// TODO: Setup contract for dividend payouts. Do this by adding
-    ///       a function called payDividend() include NatSpec.
+    /// a function called payDividend() include NatSpec.
+    /// @notice Pays dividends to the investor.
+    /// @param _dividend is the contact address of where we want to send the dividend payout to.
+    function payDividend(address _dividends) public payable returns(uint) {
+
+    }
 
     /// TODO: add updateStableCurrency() function which updates _stableCurrency.
+    /// @notice updates stablecurrency to _stablecurrency.
+    /// @param _stablecurrency stores stableCurrency.
+    function updateStableCurrency(address _stableCurrency) public {
+        stableCurrency = _stableCurrency;
+    }
 
     /// TODO: add depositDividends() function which allows a manual deposit
     ///       of funds into the contract
+    /// @notice deposits dividend payment to a depository.
+    /// @param  dividendWallet stores the wallet address for the dividends to be directed to.
+    /// @param dividendDepository stores the amount of dividends to be paid to an investor.
+    function depositDividends(address dividendWallet, uint dividendDepository) public {
+
+    }
 
 
     // ~ View Functions ~
