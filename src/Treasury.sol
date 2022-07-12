@@ -178,14 +178,23 @@ contract Treasury is Ownable {
 
     }
 
+    /// @notice used to get the InvestorData of a specific wallet.
+    /// @param  _wallet wallet of investor whose InvestorData we want to get.
+    /// @return InvestorData returns struct of info pertaining to investor's data.
     function getInvestorData(address _wallet) public view returns (InvestorData memory) {
         return investorLibrary[_wallet];
     }
 
+    /// @notice used to get InvestmentReceipt[] of a specific account.
+    /// @param  _wallet wallet of investor whose InvestmentReceipt[] we want to return.
+    /// @return InvestmentReceipt[] array of investments made by this wallet.
     function getInvestmentLibrary(address _wallet) public view returns (InvestmentReceipt[] memory) {
         return investorLibrary[_wallet].investmentLibrary;
     }
 
+    /// @notice used to get DividendReceipt[] of a specific account.
+    /// @param  _wallet wallet of investor whose DividendReceipt[] we want to return.
+    /// @return DividendReceipt[] array of dividends received by this wallet.
     function getDividendLibrary(address _wallet) public view returns (DividendReceipt[] memory) {
         return investorLibrary[_wallet].dividendLibrary;
     }
