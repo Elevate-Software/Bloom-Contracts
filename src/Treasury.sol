@@ -125,7 +125,7 @@ contract Treasury is Ownable {
 
     /// @notice Mints BLOOM tokens to a certain investor.
     /// @dev    Calls BloomToken.sol::mint().
-    function mintBloom(address _wallet, uint _amount) external isSwapInterface() {
+    function mintBloom() public {
 
     }
 
