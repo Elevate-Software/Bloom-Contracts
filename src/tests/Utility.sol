@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.6;
 
-import "../users/Admin.sol";
-import "../users/Investor.sol";
+import "../users/Actor.sol";
 
 import "../../lib/ds-test/src/test.sol";
 
@@ -22,8 +21,8 @@ contract Utility is DSTest {
     /***********************/
     /*** Protocol Actors ***/
     /***********************/
-    Admin         god;
-    Investor      tom;
+    Actor  god;
+    Actor  joe;
 
     /**********************************/
     /*** Mainnet Contract Addresses ***/
@@ -78,8 +77,8 @@ contract Utility is DSTest {
     /*** Actor/Multisig Setup Functions ***/
     /**************************************/
     function createActors() public { 
-        god = new Admin();
-        tom = new Investor();
+        god = new Actor();
+        joe = new Actor();
     }
 
     /******************************/

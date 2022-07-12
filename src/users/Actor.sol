@@ -4,7 +4,7 @@ pragma experimental ABIEncoderV2;
 
 import { IERC20 } from "../interfaces/InterfacesAggregated.sol";
 
-contract Admin {
+contract Actor {
 
     /************************/
     /*** DIRECT FUNCTIONS ***/
