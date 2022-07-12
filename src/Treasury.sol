@@ -133,14 +133,14 @@ contract Treasury is Ownable {
     /// TODO: Setup contract for dividend payouts. Do this by adding
     /// a function called payDividend() include NatSpec.
     /// @notice Pays dividends to the investor.
-    /// @param _dividend is the contact address of where we want to send the dividend payout to.
+    /// @param _dividends is the contact address of where we want to send the dividend payout to.
     function payDividend(address _dividends) public payable returns(uint) {
 
     }
 
     /// TODO: add updateStableCurrency() function which updates _stableCurrency.
     /// @notice updates stablecurrency to _stablecurrency.
-    /// @param _stablecurrency stores stableCurrency.
+    /// @param _stableCurrency stores stableCurrency.
     function updateStableCurrency(address _stableCurrency) public {
         stableCurrency = _stableCurrency;
     }
