@@ -25,6 +25,7 @@ contract SwapInterface is Ownable{
     mapping(address => InvestmentData) private investmentTracker;   /// @notice Tracks wallets and their individual investments made.
     mapping(address => bool) public whitelistedToken;               /// @notice Whitelist for coins accepted for investment.
     mapping(address => bool) public whitelistedWallet;              /// @notice Whitelist for wallets allowed to invest.
+    mapping(address => bool) public isAuthorizedUser;               /// @notice Admin wallets be added to this mapping.
 
     /// @notice Struct used to store important data for each investment made before sent to the treasury.
     /// @param
@@ -63,7 +64,12 @@ contract SwapInterface is Ownable{
 
     /// @notice Only authorized users can call functions with this modifier.
     modifier isAuthorized() {
-        
+        // TODO: Add require statement
+        _;
+    }
+
+    modifier isWhitelistedWallet() {
+        // TODO: Add require statement
         _;
     }
 
@@ -71,32 +77,23 @@ contract SwapInterface is Ownable{
     // Functions
     // ---------
 
-    // TODO: add these functions along with it's NatSpec
-    // add wallet to whitelist
-    // invest() -> should only be called if whitelisted
-    // swap function -> uses CRV
-    // change stableCurrency -> onlyOwner
-    // disable/enable contract -> onlyOwner
-    // update token whitelist
-    // balanceOf stableCurrency
 
-    /// TODO: Should we have a remove wallet from whitelist?
+    /// TODO: Should we have a remove wallet from whitelist? yes
     /// @notice Adds a wallet to the whitelist.
     /// @param _address The wallet to add to the whitelist.
-    function addWalletToWhitelist(address _address) public onlyOwner() {
+    function addWalletToWhitelist(address _address) public isAuthorized() {
 
     }
 
     /// @notice Allows user to invest tokens into the REIT.
     /// @param amount The amount of the token being invested.
     /// @param token The address of the token being invested.
-    function invest(uint amount, address token) public {
+    function invest(uint amount, address token) public isWhitelistedWallet() {
 
     }
 
     /// @notice Calls the Curve API to swap incoming assets to USDC.
-    /// TODO: Still trying to understand how this one will work, not sure what the inputs will be.
-    function swap() public {
+    function swap() internal { // params?
 
     }
 
@@ -106,20 +103,20 @@ contract SwapInterface is Ownable{
 
     }
 
-    /// @notice Allows owner to disable smart contract operations. (can these be external?)
-    function disableContract() public onlyOwner() {
+    /// @notice Allows owner to disable smart contract operations.
+    function disableContract() external onlyOwner() {
 
     }
 
-    /// @notice Allows owner to re-enable contract if disabled.
-    function enableContract() public onlyOwner() {
+    /// @notice Allows owner to enable contract if disabled.
+    function enableContract() external onlyOwner() {
 
     }
 
     /// @notice Updates which tokens are accepted for investments.
     /// @param tokenAddress The contact address for the token we are updating.
-    /// @param allow true to accept investments of this token, false to decline.
-    function updateTokenWhitelist(address tokenAddress, bool allow) public onlyOwner() {
+    /// @param allowed true to accept investments of this token, false to decline.
+    function updateTokenWhitelist(address tokenAddress, bool allowed) public onlyOwner() {
 
     }
 
