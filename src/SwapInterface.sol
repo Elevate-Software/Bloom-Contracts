@@ -80,13 +80,13 @@ contract SwapInterface is Ownable{
 
     /// @notice Adds a wallet to the whitelist.
     /// @param _address The wallet to add to the whitelist.
-    function addWalletToWhitelist(address _address) public isAuthorized() {
+    function addWalletToWhitelist(address _address) external isAuthorized() {
         whitelistedWallet[_address] = true;
     }
 
     /// @notice Removes a wallet from the whitelist.
     /// @param _address The wallet to remove from the whitelist.
-    function removeWalletFromWhitelist(address _address) public isAuthorized() {
+    function removeWalletFromWhitelist(address _address) external isAuthorized() {
         whitelistedWallet[_address] = false;
     }
 
