@@ -105,7 +105,7 @@ contract SwapInterface is Ownable{
     /// @notice Changes the stable currency address.
     /// @param newAddress The new stable currency contact address.
     function changeStableCurrency(address newAddress) public onlyOwner() {
-
+        stableCurrency = newAddress;
     }
 
     /// @notice Allows owner to disable smart contract operations.
@@ -122,7 +122,7 @@ contract SwapInterface is Ownable{
     /// @param tokenAddress The contact address for the token we are updating.
     /// @param allowed true to accept investments of this token, false to decline.
     function updateTokenWhitelist(address tokenAddress, bool allowed) public onlyOwner() {
-
+        whitelistedToken[tokenAddress] = allowed;
     }
 
     // ~ View Functions ~
