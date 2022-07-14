@@ -11,9 +11,41 @@ contract SwapInterfaceTest is DSTest, Utility {
     SwapInterface swapInterface;
 
     function setUp() public {
+        createActors();
+
         swapInterface = new SwapInterface(
             USDC
         );
+    }
+
+    // addWalletToWhitelist state changes
+
+    function test_addWalletToWhitelist() public {
+        //Pre state
+        assert(!swapInterface.whitelistedWallet(address(joe)));
+
+        //State change
+        assert(dev.try_addWalletToWhitelist(address(swapInterface), address(joe)));
+
+        //Post state
+        assert(swapInterface.whitelistedWallet(address(joe)));
+
+    }
+
+    // addWalletToWhitelist restrictions
+    function test_addWalletToWhitelist_restriction() public {
+        // "joe" should not be able to call updateStableReceived().
+        //assert(!joe.try_addWalletToWhitelist(address(swapInterface), address(joe)));
+
+        // "bob" should not be able to call updateStableReceived().
+        //assert(!bob.try_addWalletToWhitelist(address(swapInterface), address(joe)));
+
+        // "val" should be able to call updateStableReceived().
+        //assert(val.try_addWalletToWhitelist(address(swapInterface), address(joe)));
+
+        // "dev" should be able to call updateStableReceived().
+        assert(dev.try_addWalletToWhitelist(address(swapInterface), address(joe)));
+
     }
 
 }
