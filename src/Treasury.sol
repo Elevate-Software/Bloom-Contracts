@@ -27,8 +27,8 @@ contract Treasury is Ownable {
     address public swapInterfaceContract;                        /// @notice Used to store the address of SwapInterface.sol
 
     // TODO: Consider making investorLibrary private -> write get functions for investorData points
-    mapping(address => InvestorData) public investorLibrary;    /// @notice Mapping of Investor wallets to their investment data held in InvestorData.
-    mapping(address => bool) public isAuthorizedUser;            /// @notice isAuthorizedUser[address] returns true if wallet is authorized;
+    mapping(address => InvestorData) public investorLibrary;     /// @notice Mapping of Investor wallets to their investment data held in InvestorData.
+    address[] public authorizedUsers;                            /// @notice Array of addresses that are authorized Bloom Admins.
 
     /// @notice Investor struct is used to track data points of investments made by investors.
     /// @param amountInvested Tracks USD-stablecoin equivalent to investment made.
@@ -70,7 +70,7 @@ contract Treasury is Ownable {
         swapInterfaceContract = _swapInterface;
 
         transferOwnership(msg.sender);
-        isAuthorizedUser[msg.sender] = true;
+        authorizedUsers.push(owner());
     }
 
     // ------
@@ -129,8 +129,13 @@ contract Treasury is Ownable {
 
     }
 
-    /// @notice Allows an admin (owner) to add/remove an authorized user.
-    function updateAuthorizedUser() public onlyOwner() {
+    /// @notice Allows the contract owner to add authorized wallets to the authorizedUser[] array.
+    function addAuthorizedUser() public onlyOwner() {
+
+    }
+
+    /// @notice Allows the contract owner to remove authorized wallets from the authorizedUser[] array.
+    function removeAuthorizedUser() public onlyOwner() {
 
     }
 
