@@ -64,7 +64,7 @@ contract SwapInterface is Ownable{
 
     /// @notice Only authorized users can call functions with this modifier.
     modifier isAuthorized() {
-        // TODO: Add require statement
+        require(isAuthorizedUser[msg.sender] == true, "SwapInterface.sol::isAuthorized() User is not authorized.");
         _;
     }
 
@@ -76,6 +76,18 @@ contract SwapInterface is Ownable{
     // ---------
     // Functions
     // ---------
+
+    /// @notice Adds an authorized user.
+    /// @param _address The address to add as authorized user.
+    function addAuthorizedUser(address _address) external onlyOwner() {
+        isAuthorizedUser[_address] = true;
+    }
+
+    /// @notice Removes an authorized user.
+    /// @param _address The address to remove as authorized user.
+    function removeAuthorizedUser(address _address) external onlyOwner() {
+        isAuthorizedUser[_address] = false;
+    }
 
 
     /// @notice Adds a wallet to the whitelist.
