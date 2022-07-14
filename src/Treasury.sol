@@ -24,7 +24,10 @@ contract Treasury is Ownable {
     // ---------------
 
     address public stableCurrency;                               /// @notice Used to store address of coin used to deposit/payout from Treasury.
-    mapping(address => InvestorData) private investorLibrary;    /// @notice Mapping of Investor wallets to their investment data held in InvestorData.
+    address public swapInterfaceContract;                        /// @notice Used to store the address of SwapInterface.sol
+
+    // TODO: Consider making investorLibrary private -> write get functions for investorData points
+    mapping(address => InvestorData) public investorLibrary;    /// @notice Mapping of Investor wallets to their investment data held in InvestorData.
     mapping(address => bool) public isAuthorizedUser;            /// @notice isAuthorizedUser[address] returns true if wallet is authorized;
 
     /// @notice Investor struct is used to track data points of investments made by investors.
@@ -60,9 +63,11 @@ contract Treasury is Ownable {
     /// @notice Initializes Treasury.sol 
     /// @param _stableCurrency Used to store address of stablecoin used in contract (default is USDC).
     constructor (
-        address _stableCurrency
+        address _stableCurrency,
+        address _swapInterface
     ) {
         stableCurrency = _stableCurrency;
+        swapInterfaceContract = _swapInterface;
 
         transferOwnership(msg.sender);
         isAuthorizedUser[msg.sender] = true;
@@ -75,6 +80,8 @@ contract Treasury is Ownable {
     // TODO: Add any necessary events. An event is simply a log that takes place
     //       when something in the contract happens we feel is important enough to emit it.
     //       https://www.tutorialspoint.com/solidity/solidity_events.htm.
+
+    event StableCoinReceived(address indexed wallet, uint amount);
     
     // ---------
     // Modifiers
@@ -82,6 +89,11 @@ contract Treasury is Ownable {
 
     // TODO: Add a modifier called isAuthorizedUser that checks to see if msg.sender is an authorizedUser.
     //       https://www.tutorialspoint.com/solidity/solidity_function_modifiers.htm.
+
+    modifier isSwapInterface {
+        require(msg.sender == swapInterfaceContract, "Treasury.sol::isSwapInterface() msg.sender != SwapInterface.sol");
+        _;
+    }
     
      
     // ---------
@@ -99,10 +111,16 @@ contract Treasury is Ownable {
 
     }
 
+    /// TODO:   Add SwapInterface modifier.
     /// @notice Updates investment values when an investment is made through Dapp.
     /// @dev    Should only be called by SwapInterface.sol.
-    function updateStableReceived() public {
-
+    /// @param _wallet account making an investment.
+    /// @param _amount amount of stable coin received from account.
+    /// @param _timeUnix time unix of when investment occured.
+    function updateStableReceived(address _wallet, uint _amount, uint _timeUnix) public isSwapInterface{
+        emit StableCoinReceived(_wallet, _amount);
+        investorLibrary[_wallet].totalAmountInvested += _amount;
+        investorLibrary[_wallet].investmentLibrary.push(InvestmentReceipt(_amount, _timeUnix));
     }
 
     /// @notice Mints BLOOM tokens to a certain investor.
@@ -139,6 +157,12 @@ contract Treasury is Ownable {
         stableCurrency = _stableCurrency;
     }
 
+    /// @notice updates swapInterfaceContract.
+    /// @param _newSwapInterface stores contract address of SwapInterface.sol.
+    function updateSwapInterface(address _newSwapInterface) public onlyOwner() {
+        swapInterfaceContract = _newSwapInterface;
+    }
+
     /// @notice deposits dividend payment to a depository.
     /// @param  _amntDividends stores the amount of dividends to be paid to an investor.
     function depositDividends(uint _amntDividends) public onlyOwner() {
@@ -154,4 +178,24 @@ contract Treasury is Ownable {
 
     }
 
+    /// @notice used to get the InvestorData of a specific wallet.
+    /// @param  _wallet wallet of investor whose InvestorData we want to get.
+    /// @return InvestorData returns struct of info pertaining to investor's data.
+    function getInvestorData(address _wallet) public view returns (InvestorData memory) {
+        return investorLibrary[_wallet];
+    }
+
+    /// @notice used to get InvestmentReceipt[] of a specific account.
+    /// @param  _wallet wallet of investor whose InvestmentReceipt[] we want to return.
+    /// @return InvestmentReceipt[] array of investments made by this wallet.
+    function getInvestmentLibrary(address _wallet) public view returns (InvestmentReceipt[] memory) {
+        return investorLibrary[_wallet].investmentLibrary;
+    }
+
+    /// @notice used to get DividendReceipt[] of a specific account.
+    /// @param  _wallet wallet of investor whose DividendReceipt[] we want to return.
+    /// @return DividendReceipt[] array of dividends received by this wallet.
+    function getDividendLibrary(address _wallet) public view returns (DividendReceipt[] memory) {
+        return investorLibrary[_wallet].dividendLibrary;
+    }
 }
