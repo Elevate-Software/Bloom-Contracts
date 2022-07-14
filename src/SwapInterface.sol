@@ -79,13 +79,13 @@ contract SwapInterface is Ownable{
 
     /// @notice Adds an authorized user.
     /// @param _address The address to add as authorized user.
-    function addAuthorizedUser(address _address) external onlyOwner() {
+    function addAuthorizedUser(address _address) external {
         isAuthorizedUser[_address] = true;
     }
 
     /// @notice Removes an authorized user.
     /// @param _address The address to remove as authorized user.
-    function removeAuthorizedUser(address _address) external onlyOwner() {
+    function removeAuthorizedUser(address _address) external {
         isAuthorizedUser[_address] = false;
     }
 
