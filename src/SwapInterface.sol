@@ -78,11 +78,16 @@ contract SwapInterface is Ownable{
     // ---------
 
 
-    /// TODO: Should we have a remove wallet from whitelist? yes
     /// @notice Adds a wallet to the whitelist.
     /// @param _address The wallet to add to the whitelist.
     function addWalletToWhitelist(address _address) public isAuthorized() {
+        whitelistedWallet[_address] = true;
+    }
 
+    /// @notice Removes a wallet from the whitelist.
+    /// @param _address The wallet to remove from the whitelist.
+    function removeWalletFromWhitelist(address _address) public isAuthorized() {
+        whitelistedWallet[_address] = false;
     }
 
     /// @notice Allows user to invest tokens into the REIT.
