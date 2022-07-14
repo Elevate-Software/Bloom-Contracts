@@ -139,14 +139,14 @@ contract TreasuryTest is DSTest, Utility {
 
     function test_treasury_addAuthorizedUser_state_changes() public {
         // Pre-State Check.
-        assertEq(treasury.getNumOfAuthorizedUsers(), 0);
+        assertEq(treasury.getNumOfAuthorizedUsers(), 1);
         assertTrue(!treasury.getAuthorizedUser(address(1)));
 
         // State-change.
         assert(dev.try_addAuthorizedUser(address(treasury), address(1)));
 
         // Post-State Check.
-        assertEq(treasury.getNumOfAuthorizedUsers(), 1);
+        assertEq(treasury.getNumOfAuthorizedUsers(), 2);
         assertTrue(treasury.getAuthorizedUser(address(1)));
     }
 }
