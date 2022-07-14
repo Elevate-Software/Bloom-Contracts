@@ -32,5 +32,10 @@ contract Actor {
         string memory sig = "mintBloom(address,uint256)";
         (ok,) = address(treasury).call(abi.encodeWithSignature(sig, wallet, amount));
     }
+
+    function try_addWalletToWhitelist(address swapInterface, address _address) external returns (bool ok) {
+        string memory sig = "addWalletToWhitelist(address)";
+        (ok,) = address(swapInterface).call(abi.encodeWithSignature(sig, _address));
+    }
     
 }
