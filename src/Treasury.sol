@@ -130,8 +130,9 @@ contract Treasury is Ownable {
     }
 
     /// @notice Allows the contract owner to add authorized wallets to the authorizedUser[] array.
-    function addAuthorizedUser() public onlyOwner() {
-
+    /// @param _wallet contains wallet address of authorized users.
+    function addAuthorizedUser(address _wallet) public onlyOwner() {
+        authorizedUsers.push(_wallet);
     }
 
     /// @notice Allows the contract owner to remove authorized wallets from the authorizedUser[] array.

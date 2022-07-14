@@ -32,5 +32,10 @@ contract Actor {
         string memory sig = "mintBloom(address,uint256)";
         (ok,) = address(treasury).call(abi.encodeWithSignature(sig, wallet, amount));
     }
+
+    function try_addAuthorizedUser(address treasury, address wallet) external returns (bool ok) {
+        string memory sig = "addAuthorizedUser(address)";
+        (ok,) = address(treasury).call(abi.encodeWithSignature(sig, wallet));
+    }
     
 }
