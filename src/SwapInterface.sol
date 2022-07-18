@@ -68,8 +68,9 @@ contract SwapInterface is Ownable{
         _;
     }
 
+    /// @notice Only whitelisted users can call functions with this modifier.
     modifier isWhitelistedWallet() {
-        // TODO: Add require statement
+        require(whitelistedWallet[msg.sender] == true, "SwapInterface.sol::isWhitelistedWallet() User is not authorized.");
         _;
     }
 
@@ -122,12 +123,12 @@ contract SwapInterface is Ownable{
 
     /// @notice Allows owner to disable smart contract operations.
     function disableContract() external onlyOwner() {
-
+        contractEnabled = false;
     }
 
     /// @notice Allows owner to enable contract if disabled.
     function enableContract() external onlyOwner() {
-
+        contractEnabled = true;
     }
 
     /// @notice Updates which tokens are accepted for investments.
