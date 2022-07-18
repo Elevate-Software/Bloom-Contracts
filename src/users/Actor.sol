@@ -33,8 +33,23 @@ contract Actor {
         (ok,) = address(treasury).call(abi.encodeWithSignature(sig, wallet, amount));
     }
 
+    function try_addWalletToAuthorizedUsers(address swapInterface, address _address) external returns (bool ok) {
+        string memory sig = "addAuthorizedUser(address)";
+        (ok,) = address(swapInterface).call(abi.encodeWithSignature(sig, _address));
+    }
+
+    function try_removeWalletFromAuthorizedUsers(address swapInterface, address _address) external returns (bool ok) {
+        string memory sig = "removeAuthorizedUser(address)";
+        (ok,) = address(swapInterface).call(abi.encodeWithSignature(sig, _address));
+    }
+
     function try_addWalletToWhitelist(address swapInterface, address _address) external returns (bool ok) {
         string memory sig = "addWalletToWhitelist(address)";
+        (ok,) = address(swapInterface).call(abi.encodeWithSignature(sig, _address));
+    }
+
+    function try_removeWalletFromWhitelist(address swapInterface, address _address) external returns (bool ok) {
+        string memory sig = "removeWalletFromWhitelist(address)";
         (ok,) = address(swapInterface).call(abi.encodeWithSignature(sig, _address));
     }
     
