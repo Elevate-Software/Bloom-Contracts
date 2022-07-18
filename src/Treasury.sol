@@ -152,7 +152,7 @@ contract Treasury is Ownable {
                 gap = i;
             }
         }
-        for (uint i = gap; i <getWalletLength() - 1; i++) {
+        for (uint i = gap; i < getWalletLength() - 1; i++) {
             authorizedUsers[1] = authorizedUsers[i + 1];
         }
         authorizedUsers.pop();
