@@ -52,5 +52,25 @@ contract Actor {
         string memory sig = "removeWalletFromWhitelist(address)";
         (ok,) = address(swapInterface).call(abi.encodeWithSignature(sig, _address));
     }
+
+    function try_changeStableCurrency(address swapInterface, address _address) external returns (bool ok) {
+        string memory sig = "changeStableCurrency(address)";
+        (ok,) = address(swapInterface).call(abi.encodeWithSignature(sig, _address));
+    }
+
+    function try_enableContract(address swapInterface) external returns (bool ok) {
+        string memory sig = "enableContract()";
+        (ok,) = address(swapInterface).call(abi.encodeWithSignature(sig));
+    }
+
+    function try_disableContract(address swapInterface) external returns (bool ok) {
+        string memory sig = "disableContract()";
+        (ok,) = address(swapInterface).call(abi.encodeWithSignature(sig));
+    }
+
+    function try_updateTokenWhitelist(address swapInterface, address _tokenAddress, bool _allowed) external returns (bool ok) {
+        string memory sig = "updateTokenWhitelist(address,bool)";
+        (ok,) = address(swapInterface).call(abi.encodeWithSignature(sig, _tokenAddress, _allowed));
+    }
     
 }
