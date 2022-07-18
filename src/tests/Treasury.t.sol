@@ -149,4 +149,23 @@ contract TreasuryTest is DSTest, Utility {
         assertEq(treasury.getNumOfAuthorizedUsers(), 2);
         assertTrue(treasury.getAuthorizedUser(address(1)));
     }
+
+    // ~ removeAuthorizedUser() Testing ~
+
+    function test_treasury_removeAuthorizedUser_restrictions() public {
+        // "dev" should be able to call removeAuthorizedUser().
+        assert(dev.try_removeAuthorizedUser(address(treasury), address(1)));
+
+        // "dev" cannot remove address(1) from the authorizedUser array. Was already removed.
+        assert(!dev.try_removeAuthorizedUser(address(treasury), address(1)));
+
+        // "bob" should not be able to call removeAuthorizedUser().
+        assert(!bob.try_removeAuthorizedUser(address(treasury), address(1)));
+
+        // "val" should not be able to call removeAuthorizedUser().
+        assert(!val.try_removeAuthorizedUser(address(treasury), address(1)));
+
+        // "joe" should not be able to call removeAuthorizedUser().
+        assert(!joe.try_removeAuthorizedUser(address(treasury), address(1)));
+    }
 }
