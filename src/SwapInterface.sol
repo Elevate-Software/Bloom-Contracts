@@ -46,10 +46,13 @@ contract SwapInterface is Ownable{
     /// @notice Initializes Treasury.sol 
     /// @param _stableCurrency Used to store address of stablecoin used in contract (default is USDC).
     constructor (
-        address _stableCurrency
+        address _stableCurrency,
+        address _admin
     ) {
         stableCurrency = _stableCurrency;
-        transferOwnership(msg.sender);
+
+        transferOwnership(_admin);
+        isAuthorizedUser[owner()] = true;
     }
 
     // ------
@@ -80,13 +83,13 @@ contract SwapInterface is Ownable{
 
     /// @notice Adds an authorized user.
     /// @param _address The address to add as authorized user.
-    function addAuthorizedUser(address _address) external {
+    function addAuthorizedUser(address _address) external onlyOwner() {
         isAuthorizedUser[_address] = true;
     }
 
     /// @notice Removes an authorized user.
     /// @param _address The address to remove as authorized user.
-    function removeAuthorizedUser(address _address) external {
+    function removeAuthorizedUser(address _address) external onlyOwner() {
         isAuthorizedUser[_address] = false;
     }
 

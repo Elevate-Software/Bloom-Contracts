@@ -14,7 +14,8 @@ contract SwapInterfaceTest is DSTest, Utility {
         createActors();
 
         swapInterface = new SwapInterface(
-            USDC
+            USDC,
+            address(dev)
         );
 
         
