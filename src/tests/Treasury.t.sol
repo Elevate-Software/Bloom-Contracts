@@ -102,8 +102,14 @@ contract TreasuryTest is DSTest, Utility {
     // ~ removeAuthorizedUser() Testing ~
 
     function test_treasury_removeAuthorizedUser_restrictions() public {
-        // "dev" should be able to call removeAuthorizedUser().
+        // add joe to array.
+        assert(dev.try_addAuthorizedUser(address(treasury), address(joe)));
+
+        // "dev" is able to remove joe from the array.
         assert(dev.try_removeAuthorizedUser(address(treasury), address(joe)));
+        
+        // "dev" should not be able to remove a wallet that is not inside the array.
+        assert(!dev.try_removeAuthorizedUser(address(treasury), address(joe)));
 
         // "bob" should not be able to call removeAuthorizedUser().
         assert(!bob.try_removeAuthorizedUser(address(treasury), address(joe)));
@@ -114,5 +120,7 @@ contract TreasuryTest is DSTest, Utility {
         // "joe" should not be able to call removeAuthorizedUser().
         assert(!joe.try_removeAuthorizedUser(address(treasury), address(val)));
     }
+
+    // TODO: add a state changes test case
 }
  
