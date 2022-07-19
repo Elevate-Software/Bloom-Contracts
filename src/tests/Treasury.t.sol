@@ -114,5 +114,7 @@ contract TreasuryTest is DSTest, Utility {
         // "joe" should not be able to call removeAuthorizedUser().
         assert(!joe.try_removeAuthorizedUser(address(treasury), address(val)));
     }
+
+    
 }
  
