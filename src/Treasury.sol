@@ -129,7 +129,6 @@ contract Treasury is Ownable {
 
     }
 
-
     /// @notice Allows the contract owner to add authorized wallets to the authorizedUser[] array.
     /// @param _wallet contains wallet address we wish to add to the authorizesUers[] array.
     function addAuthorizedUser(address _wallet) public onlyOwner() {
@@ -137,11 +136,17 @@ contract Treasury is Ownable {
         authorizedUsers.push(_wallet);
     }
 
+        /// @notice This function gets the number of wallets inside the authorizedUsers array.
+    /// @return uint Number of wallets inside array.
+    function getNumOfAuthorizedUsers() public view returns (uint) {
+        return authorizedUsers.length;
+    }
+
     /// @notice Allows the contract owner to remove authorized wallets from the authorizedUser[] array.
     /// @param _wallet contains wallet address we wish to remove to the authorizedUsers[] array.
     function removeAuthorizedUser(address _wallet) public onlyOwner() {
 
-        require(getAuthorizedUser(_wallet), "Treasury.sol::removeAuthorizedUser() wallet does not exist within authorizedUser array");
+        require(getAuthorizedUser(_wallet), "Treasury.sol::removeAuthorizedUser() wallet does not exist within authorizedUser[]");
 
         uint gap;
 
@@ -157,11 +162,7 @@ contract Treasury is Ownable {
         authorizedUsers.pop();
     }
 
-    /// @notice This function gets the number of wallets inside the authorizedUsers array.
-    /// @return uint Number of wallets inside array.
-    function getNumOfAuthorizedUsers() public view returns (uint) {
-        return authorizedUsers.length;
-    }
+
 
     /// @notice Function returns a boolean on whether the wallet is added to the authorizedUsers[] array.
     /// @param  _wallet The wallet address we wish to know is or is not inside the array.
