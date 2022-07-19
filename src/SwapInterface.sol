@@ -45,11 +45,15 @@ contract SwapInterface is Ownable{
 
     /// @notice Initializes Treasury.sol 
     /// @param _stableCurrency Used to store address of stablecoin used in contract (default is USDC).
+    /// @param _admin Wallet address of owner account.
     constructor (
-        address _stableCurrency
+        address _stableCurrency,
+        address _admin
     ) {
         stableCurrency = _stableCurrency;
-        transferOwnership(msg.sender);
+
+        transferOwnership(_admin);
+        isAuthorizedUser[owner()] = true;
     }
 
     // ------
@@ -64,12 +68,13 @@ contract SwapInterface is Ownable{
 
     /// @notice Only authorized users can call functions with this modifier.
     modifier isAuthorized() {
-        // TODO: Add require statement
+        require(isAuthorizedUser[msg.sender] == true, "SwapInterface.sol::isAuthorized() User is not authorized.");
         _;
     }
 
+    /// @notice Only whitelisted users can call functions with this modifier.
     modifier isWhitelistedWallet() {
-        // TODO: Add require statement
+        require(whitelistedWallet[msg.sender] == true, "SwapInterface.sol::isWhitelistedWallet() User is not authorized.");
         _;
     }
 
@@ -77,12 +82,29 @@ contract SwapInterface is Ownable{
     // Functions
     // ---------
 
+    /// @notice Adds an authorized user.
+    /// @param _address The address to add as authorized user.
+    function addAuthorizedUser(address _address) external onlyOwner() {
+        isAuthorizedUser[_address] = true;
+    }
 
-    /// TODO: Should we have a remove wallet from whitelist? yes
+    /// @notice Removes an authorized user.
+    /// @param _address The address to remove as authorized user.
+    function removeAuthorizedUser(address _address) external onlyOwner() {
+        isAuthorizedUser[_address] = false;
+    }
+
+
     /// @notice Adds a wallet to the whitelist.
     /// @param _address The wallet to add to the whitelist.
-    function addWalletToWhitelist(address _address) public isAuthorized() {
+    function addWalletToWhitelist(address _address) external isAuthorized() {
+        whitelistedWallet[_address] = true;
+    }
 
+    /// @notice Removes a wallet from the whitelist.
+    /// @param _address The wallet to remove from the whitelist.
+    function removeWalletFromWhitelist(address _address) external isAuthorized() {
+        whitelistedWallet[_address] = false;
     }
 
     /// @notice Allows user to invest tokens into the REIT.
@@ -100,24 +122,24 @@ contract SwapInterface is Ownable{
     /// @notice Changes the stable currency address.
     /// @param newAddress The new stable currency contact address.
     function changeStableCurrency(address newAddress) public onlyOwner() {
-
+        stableCurrency = newAddress;
     }
 
     /// @notice Allows owner to disable smart contract operations.
     function disableContract() external onlyOwner() {
-
+        contractEnabled = false;
     }
 
     /// @notice Allows owner to enable contract if disabled.
     function enableContract() external onlyOwner() {
-
+        contractEnabled = true;
     }
 
     /// @notice Updates which tokens are accepted for investments.
     /// @param tokenAddress The contact address for the token we are updating.
     /// @param allowed true to accept investments of this token, false to decline.
     function updateTokenWhitelist(address tokenAddress, bool allowed) public onlyOwner() {
-
+        whitelistedToken[tokenAddress] = allowed;
     }
 
     // ~ View Functions ~
