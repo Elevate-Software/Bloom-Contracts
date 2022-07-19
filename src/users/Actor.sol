@@ -98,5 +98,10 @@ contract Actor {
         string memory sig = "addAuthorizedUser(address)";
         (ok,) = address(treasury).call(abi.encodeWithSignature(sig, wallet));
     }
+
+    function try_removeAuthorizedUser(address treasury, address wallet) external returns (bool ok) {
+        string memory sig = "removeAuthorizedUser(address)";
+        (ok,) = address(treasury).call(abi.encodeWithSignature(sig, wallet));
+    }
     
 }
