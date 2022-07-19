@@ -29,7 +29,8 @@ contract SwapInterfaceTest is DSTest, Utility {
         assertTrue(swapInterface.whitelistedWallet(address(bob)));
     }
 
-    // TODO: Fix naming convention of test functions: test_swapInterface_addAuthorizedUser_state_changes
+    // TODO: Fix naming convention of test functions: test_swapInterface_addAuthorizedUser_state_changes.
+    // TODO: Add stable currency constants to updateTokenWhitelist functions.
 
     // ~ addAuthorizedUser() Testing ~
 
@@ -212,8 +213,11 @@ contract SwapInterfaceTest is DSTest, Utility {
 
     // disable contract state changes.
     function test_disableContract() public {
+        // Dev will enable contract.
+        assert(dev.try_enableContract(address(swapInterface)));
+
         // pre-state
-        assertTrue(!swapInterface.contractEnabled());
+        assertTrue(swapInterface.contractEnabled());
 
         // state change
         assert(dev.try_disableContract(address(swapInterface)));
@@ -251,6 +255,9 @@ contract SwapInterfaceTest is DSTest, Utility {
         // post-state
         assert(swapInterface.whitelistedToken(address(1)));
 
+        // remove
+
+        // post state 2
     }
 
     // update token whitelist restrictions.
