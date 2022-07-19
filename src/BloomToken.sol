@@ -10,6 +10,7 @@ import "./OpenZeppelin/Ownable.sol";
 ///         - Burnable
 ///         To be determined:
 ///         - Which contracts should be allowed to mint/burn, and process for enabling mint/burn permissions.
+///         - Keep track of given tokens on a per-project basis?
 
 contract BloomToken is Ownable{
 
