@@ -45,6 +45,7 @@ contract SwapInterface is Ownable{
 
     /// @notice Initializes Treasury.sol 
     /// @param _stableCurrency Used to store address of stablecoin used in contract (default is USDC).
+    /// @param _admin Wallet address of owner account.
     constructor (
         address _stableCurrency,
         address _admin
