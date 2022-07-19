@@ -145,7 +145,6 @@ contract Treasury is Ownable {
     /// @notice Allows the contract owner to remove authorized wallets from the authorizedUser[] array.
     /// @param _wallet contains wallet address we wish to remove to the authorizedUsers[] array.
     function removeAuthorizedUser(address _wallet) public onlyOwner() {
-
         require(getAuthorizedUser(_wallet), "Treasury.sol::removeAuthorizedUser() wallet does not exist within authorizedUser[]");
 
         uint gap;
