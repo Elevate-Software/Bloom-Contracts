@@ -29,7 +29,6 @@ contract SwapInterfaceTest is DSTest, Utility {
         assertTrue(swapInterface.whitelistedWallet(address(bob)));
     }
 
-    // TODO: Add stable currency constants to updateTokenWhitelist functions.
 
     // ~ addAuthorizedUser() Testing ~
 
@@ -157,10 +156,10 @@ contract SwapInterfaceTest is DSTest, Utility {
         assertEq(swapInterface.stableCurrency(), USDC);
 
         // state change
-        assert(dev.try_changeStableCurrency(address(swapInterface), address(1)));
+        assert(dev.try_changeStableCurrency(address(swapInterface), WETH));
 
         // post-state
-        assertEq(swapInterface.stableCurrency(), address(1));
+        assertEq(swapInterface.stableCurrency(), WETH);
     }
 
     // change stable currency restrictions.
@@ -246,31 +245,33 @@ contract SwapInterfaceTest is DSTest, Utility {
     // update token whitelist state changes.
     function test_swapInterface_updateTokenWhitelist_state_changes() public {
         // pre-state
-        assert(!swapInterface.whitelistedToken(address(1)));
+        assert(!swapInterface.whitelistedToken(DAI));
 
-        // state change
-        assert(dev.try_updateTokenWhitelist(address(swapInterface), address(1), true));
+        // state change 1 (allow DAI for token whitelist)
+        assert(dev.try_updateTokenWhitelist(address(swapInterface), DAI, true));
 
         // post-state
-        assert(swapInterface.whitelistedToken(address(1)));
+        assert(swapInterface.whitelistedToken(DAI));
 
-        // remove
+        // state change 2 (disallow DAI from token whitelist)
+        assert(dev.try_updateTokenWhitelist(address(swapInterface), DAI, false));
 
         // post state 2
+        assert(!swapInterface.whitelistedToken(DAI));
     }
 
     // update token whitelist restrictions.
     function test_swapInterface_updateTokenWhitelist_restriction() public {
         // "joe" should not be able to call updateTokenWhitelist().
-        assert(!joe.try_updateTokenWhitelist(address(swapInterface), address(1), true));
+        assert(!joe.try_updateTokenWhitelist(address(swapInterface), DAI, true));
 
         // "bob" should not be able to call updateTokenWhitelist().
-        assert(!bob.try_updateTokenWhitelist(address(swapInterface), address(1), true));
+        assert(!bob.try_updateTokenWhitelist(address(swapInterface), DAI, true));
 
         // "val" should not be able to call updateTokenWhitelist().
-        assert(!val.try_updateTokenWhitelist(address(swapInterface), address(1), true));
+        assert(!val.try_updateTokenWhitelist(address(swapInterface), DAI, true));
 
         // "dev" should be able to call updateTokenWhitelist().
-        assert(dev.try_updateTokenWhitelist(address(swapInterface), address(1), true));
+        assert(dev.try_updateTokenWhitelist(address(swapInterface), DAI, true));
     }
 }
