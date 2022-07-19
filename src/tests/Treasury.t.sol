@@ -130,8 +130,6 @@ contract TreasuryTest is DSTest, Utility {
         assert(!joe.try_removeAuthorizedUser(address(treasury), address(val)));
     }
 
-    // TODO: add a state changes test case
-
     function test_treasury_removeAuthorizedUser_state_changes() public {
         assert(dev.try_addAuthorizedUser(address(treasury), address(joe)));
 

@@ -93,6 +93,8 @@ contract Actor {
         string memory sig = "updateTokenWhitelist(address,bool)";
         (ok,) = address(swapInterface).call(abi.encodeWithSignature(sig, _tokenAddress, _allowed));
     }
+
+    // ~ treasury ~
         
     function try_addAuthorizedUser(address treasury, address wallet) external returns (bool ok) {
         string memory sig = "addAuthorizedUser(address)";
