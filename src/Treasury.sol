@@ -27,8 +27,8 @@ contract Treasury is Ownable {
     address public swapInterfaceContract;                        /// @notice Used to store the address of SwapInterface.sol
 
     // TODO: Consider making investorLibrary private -> write get functions for investorData points
-    mapping(address => InvestorData) public investorLibrary;    /// @notice Mapping of Investor wallets to their investment data held in InvestorData.
-    mapping(address => bool) public isAuthorizedUser;            /// @notice isAuthorizedUser[address] returns true if wallet is authorized;
+    mapping(address => InvestorData) public investorLibrary;     /// @notice Mapping of Investor wallets to their investment data held in InvestorData.
+    address[] public authorizedUsers;                            /// @notice Array of addresses that are authorized Bloom Admins.
 
     /// @notice Investor struct is used to track data points of investments made by investors.
     /// @param amountInvested Tracks USD-stablecoin equivalent to investment made.
@@ -70,7 +70,7 @@ contract Treasury is Ownable {
         swapInterfaceContract = _swapInterface;
 
         transferOwnership(msg.sender);
-        isAuthorizedUser[msg.sender] = true;
+        authorizedUsers.push(owner());
     }
 
     // ------
@@ -129,9 +129,38 @@ contract Treasury is Ownable {
 
     }
 
-    /// @notice Allows an admin (owner) to add/remove an authorized user.
-    function updateAuthorizedUser() public onlyOwner() {
+    /// @notice Allows the contract owner to add authorized wallets to the authorizedUser[] array.
+    /// @param _wallet contains wallet address we wish to add to the authorizesUers[] array.
+    function addAuthorizedUser(address _wallet) public onlyOwner() {
+        require(!getAuthorizedUser(_wallet), "Treasury.sol::addAuthorizedUser() wallet is already an authorizedUser");
+        authorizedUsers.push(_wallet);
+    }
 
+    /// @notice Allows the contract owner to remove authorized wallets from the authorizedUser[] array.
+    function removeAuthorizedUser() public onlyOwner() {
+
+    }
+
+    /// @notice This function gets the number of wallets inside the authorizedUsers array.
+    /// @return uint Number of wallets inside array.
+    function getNumOfAuthorizedUsers() public view returns (uint) {
+        return authorizedUsers.length;
+    }
+
+    /// @notice Function returns a boolean on whether the wallet is added to the authorizedUsers[] array.
+    /// @param  _wallet The wallet address we wish to know is or is not inside the array.
+    /// @return bool true if wallet is inside the array, otherwise false.
+    function getAuthorizedUser(address _wallet) public view returns (bool) {
+        if (getNumOfAuthorizedUsers() > 0) {
+            for (uint i = 0; i < getNumOfAuthorizedUsers(); i++) {
+                if (authorizedUsers[i] == _wallet) {
+                    return true;
+                }
+            }
+        } else {
+            return false;
+        }
+        return false;
     }
 
     /// @notice Withdraws asset to owner wallet.

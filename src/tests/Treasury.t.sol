@@ -13,10 +13,7 @@ contract TreasuryTest is DSTest, Utility {
     function setUp() public {
         createActors();
 
-        treasury = new Treasury(
-            USDC,
-            address(swapInterface)
-        );
+        treasury = new Treasury(USDC, address(swapInterface));
 
         treasury.transferOwnership(address(dev));
     }
@@ -64,10 +61,41 @@ contract TreasuryTest is DSTest, Utility {
         assertEq(treasury.getInvestmentLibrary(address(1))[0].timeUnix, block.timestamp);
     }
 
-    // ~ mintBloom() Testing
+    // ~ mintBloom() Testing ~
 
     function test_treasury_mintBloom_restrictions() public {
         // Write test function. tryFunc is written
     }
 
+    // ~ addAuthorizedUser() Testing ~
+
+    function test_treasury_addAuthorizedUser_restrictions() public {
+        // "dev" should be able to call addAuthorizedUser().
+        assert(dev.try_addAuthorizedUser(address(treasury), address(1)));
+
+        // "dev" cannot add address(1) to the authorizedUser array. Was already added.
+        assert(!dev.try_addAuthorizedUser(address(treasury), address(1)));
+
+        // "bob" should not be able to call addAuthorizedUser().
+        assert(!bob.try_addAuthorizedUser(address(treasury), address(1)));
+
+        // "val" should not be able to call addAuthorizedUser().
+        assert(!val.try_addAuthorizedUser(address(treasury), address(1)));
+
+        // "joe" should not be able to call addAuthorizedUser().
+        assert(!joe.try_addAuthorizedUser(address(treasury), address(1)));
+    }
+
+    function test_treasury_addAuthorizedUser_state_changes() public {
+        // Pre-State Check.
+        assertEq(treasury.getNumOfAuthorizedUsers(), 1);
+        assertTrue(!treasury.getAuthorizedUser(address(1)));
+
+        // State-change.
+        assert(dev.try_addAuthorizedUser(address(treasury), address(1)));
+
+        // Post-State Check.
+        assertEq(treasury.getNumOfAuthorizedUsers(), 2);
+        assertTrue(treasury.getAuthorizedUser(address(1)));
+    }
 }
