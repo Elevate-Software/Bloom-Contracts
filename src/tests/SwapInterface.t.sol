@@ -22,11 +22,19 @@ contract SwapInterfaceTest is DSTest, Utility {
         dev.try_addWalletToWhitelist(address(swapInterface), address(bob));
     }
 
+    function test_swapInterface_init_state() public {
+        assertEq(swapInterface.stableCurrency(), USDC);
+        assertEq(swapInterface.owner(), address(dev));
+        assertTrue(swapInterface.isAuthorizedUser(address(val)));
+        assertTrue(swapInterface.whitelistedWallet(address(bob)));
+    }
 
-    // ~ Authorized Users ~
+    // TODO: Fix naming convention of test functions: test_swapInterface_addAuthorizedUser_state_changes
 
-    // addAuthorizedUser state changes
-    function test_addAuthorizedUser() public {
+    // ~ addAuthorizedUser() Testing ~
+
+    // addAuthorizedUser state changes.
+    function test_addAuthorizedUser() public { 
         // pre-state
         assert(!swapInterface.isAuthorizedUser(address(joe)));
 
@@ -37,7 +45,7 @@ contract SwapInterfaceTest is DSTest, Utility {
         assert(swapInterface.isAuthorizedUser(address(joe)));
     }
 
-    // addAuthorizedUser restrictions
+    // addAuthorizedUser restrictions.
     function test_addAuthorizedUser_restriction() public {
         // "joe" should not be able to call addAuthorizedUser().
         assert(!joe.try_addWalletToAuthorizedUsers(address(swapInterface), address(joe)));
@@ -52,7 +60,9 @@ contract SwapInterfaceTest is DSTest, Utility {
         assert(dev.try_addWalletToAuthorizedUsers(address(swapInterface), address(joe)));
     }
 
-    // removeAuthorizedUser state changes
+    // ~ removeAuthorizedUser() Testing ~
+
+    // removeAuthorizedUser state changes.
     function test_removeAuthorizedUser() public {
         // pre-state
         assert(swapInterface.isAuthorizedUser(address(val)));
@@ -64,7 +74,7 @@ contract SwapInterfaceTest is DSTest, Utility {
         assert(!swapInterface.isAuthorizedUser(address(val)));
     }
 
-    // removeAuthorizedUser restrictions
+    // removeAuthorizedUser restrictions.
     function test_removeAuthorizedUser_restriction() public {
         // "joe" should not be able to call removeAuthorizedUser().
         assert(!joe.try_removeWalletFromAuthorizedUsers(address(swapInterface), address(joe)));
@@ -79,9 +89,9 @@ contract SwapInterfaceTest is DSTest, Utility {
         assert(dev.try_removeWalletFromAuthorizedUsers(address(swapInterface), address(joe)));
     }
 
-    // ~ Whitelists
+    // ~ addWalletToWhitelist() Testing ~
 
-    // addWalletToWhitelist state changes
+    // addWalletToWhitelist state changes.
     function test_addWalletToWhitelist() public {
         //Pre state
         assert(!swapInterface.whitelistedWallet(address(joe)));
@@ -94,7 +104,7 @@ contract SwapInterfaceTest is DSTest, Utility {
 
     }
 
-    // addWalletToWhitelist restrictions
+    // addWalletToWhitelist restrictions.
     function test_addWalletToWhitelist_restriction() public {
         // "joe" should not be able to call addWalletToWhitelist().
         assert(!joe.try_addWalletToWhitelist(address(swapInterface), address(joe)));
@@ -110,7 +120,9 @@ contract SwapInterfaceTest is DSTest, Utility {
 
     }
 
-    // removeWalletFromWhitelist state changes
+    // ~ removeWalletFromWhitelist() Testing ~
+
+    // removeWalletFromWhitelist state changes.
     function test_removeWalletFromWhitelist() public {
         // pre-state
         assert(swapInterface.whitelistedWallet(address(bob)));
@@ -122,7 +134,7 @@ contract SwapInterfaceTest is DSTest, Utility {
         assert(!swapInterface.whitelistedWallet(address(bob)));
     }
 
-    // removeWalletFromWhitelist restrictions
+    // removeWalletFromWhitelist restrictions.
     function test_removeWalletFromWhitelist_restriction() public {
         // "joe" should not be able to call removeWalletFromWhitelist().
         assert(!joe.try_removeWalletFromWhitelist(address(swapInterface), address(joe)));
@@ -137,9 +149,9 @@ contract SwapInterfaceTest is DSTest, Utility {
         assert(dev.try_removeWalletFromWhitelist(address(swapInterface), address(joe)));
     }
 
-    // ~ Stable Currency
+    // ~ changeStableCurrency() Testing ~
 
-    // change stable currency state changes
+    // change stable currency state changes.
     function test_changeStableCurrency() public {
         // pre-state
         assertEq(swapInterface.stableCurrency(), USDC);
@@ -151,7 +163,7 @@ contract SwapInterfaceTest is DSTest, Utility {
         assertEq(swapInterface.stableCurrency(), address(1));
     }
 
-    // change stable currency restrictions
+    // change stable currency restrictions.
     function test_changeStableCurrency_restriction() public {
         // "joe" should not be able to call changeStableCurrency().
         assert(!joe.try_changeStableCurrency(address(swapInterface), address(1)));
@@ -166,9 +178,9 @@ contract SwapInterfaceTest is DSTest, Utility {
         assert(dev.try_changeStableCurrency(address(swapInterface), address(1)));
     }
 
-    // ~ Contract Enable/Disable
+    // ~ enableContract() Testing ~
 
-    // enable contract state changes
+    // enable contract state changes.
     function test_enableContract() public {
         // pre-state
         assertTrue(!swapInterface.contractEnabled());
@@ -196,7 +208,9 @@ contract SwapInterfaceTest is DSTest, Utility {
 
     }
 
-    // disable contract state changes
+    // ~ disableContract() Testing ~
+
+    // disable contract state changes.
     function test_disableContract() public {
         // pre-state
         assertTrue(!swapInterface.contractEnabled());
@@ -208,7 +222,7 @@ contract SwapInterfaceTest is DSTest, Utility {
         assertTrue(!swapInterface.contractEnabled());
     }
 
-    // disable contract restrictions
+    // disable contract restrictions.
     function test_disableContract_restriction() public {
         // "joe" should not be able to call disableContract().
         assert(!joe.try_disableContract(address(swapInterface)));
@@ -224,9 +238,9 @@ contract SwapInterfaceTest is DSTest, Utility {
 
     }
 
-    // ~ Token Whitelist
+    // ~ updateTokenWhitelist() Testing ~
 
-    // update token whitelist state changes
+    // update token whitelist state changes.
     function test_updateTokenWhitelist() public {
         // pre-state
         assert(!swapInterface.whitelistedToken(address(1)));
@@ -239,7 +253,7 @@ contract SwapInterfaceTest is DSTest, Utility {
 
     }
 
-    // update token whitelist restrictions
+    // update token whitelist restrictions.
     function test_updateTokenWhitelist_restriction() public {
         // "joe" should not be able to call updateTokenWhitelist().
         assert(!joe.try_updateTokenWhitelist(address(swapInterface), address(1), true));
