@@ -129,10 +129,6 @@ contract Treasury is Ownable {
 
     }
 
-    /// @notice this function returns the legnth of the authorizedUsers[] array.
-    function getWalletLength() public view returns(uint256){
-        return authorizedUsers.length;
-    }
 
     /// @notice Allows the contract owner to add authorized wallets to the authorizedUser[] array.
     /// @param _wallet contains wallet address we wish to add to the authorizesUers[] array.
@@ -144,15 +140,18 @@ contract Treasury is Ownable {
     /// @notice Allows the contract owner to remove authorized wallets from the authorizedUser[] array.
     /// @param _wallet contains wallet address we wish to remove to the authorizedUsers[] array.
     function removeAuthorizedUser(address _wallet) public onlyOwner() {
+
+        require(getAuthorizedUser(_wallet), "Treasury.sol::removeAuthorizedUser() wallet does not exist within authorizedUser array");
+
         uint gap;
 
-        for (uint i = 0; i < getWalletLength(); i++) {
+        for (uint i = 0; i < getNumOfAuthorizedUsers(); i++) {
             if (_wallet == authorizedUsers[i]) {
                 delete authorizedUsers[i];
                 gap = i;
             }
         }
-        for (uint i = gap; i < getWalletLength() - 1; i++) {
+        for (uint i = gap; i < getNumOfAuthorizedUsers() - 1; i++) {
             authorizedUsers[1] = authorizedUsers[i + 1];
         }
         authorizedUsers.pop();
