@@ -115,8 +115,31 @@ contract SwapInterface is Ownable{
     }
 
     /// @notice Calls the Curve API to swap incoming assets to USDC.
-    function swap() internal { // params?
+    function swap(address asset, uint amount) internal {
+        require(whitelistedToken[asset] == true, "swapInterface.sol::swap() Swapping is disabled for this token.");
 
+        // swap given asset to stable currency (USDC).
+
+        // Pools resources //
+        // All Pools: https://curve.fi/pools
+        // Understanding Pools: https://resources.curve.fi/lp/understanding-curve-pools
+        // Base & MetaPools: https://resources.curve.fi/lp/base-and-metapools
+
+        // Swapping resources //
+        // Tutorial (it's in Vyper, but should be almost identical in Solidity): https://www.youtube.com/watch?v=uB78gRsE5cI
+        // Pool Contract: https://github.com/curvefi/curve-contract/tree/master/contracts/pools
+
+        // DAI, USDC, USDT, FRAX, WETH, WBTC, TUSD
+        // needs to be or swap directly to USDC
+        // viable pools: 3Pool (DAI, USDT, USDC); fraxUSDC (FRAX, USDC); 
+        // missing pools: WETH, WBTC, TUSD ... tricrypto2(USDT, wBTC, WETH) but is non-pegged and doesn't have USDC.
+
+        // need a separate interface for each pool we're going to use.
+        // May have to cut out WETH, WBTC, AND TUSD.
+            // TUSD because there's no pool for it
+            // WETH AND WBTC because we would have to swap twice (into TUSD in tricrypto2 pool, then into USDC in 3pool).
+
+        // automatically send invested USDC to treasury.
     }
 
     /// @notice Changes the stable currency address.
