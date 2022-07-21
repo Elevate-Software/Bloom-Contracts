@@ -33,7 +33,7 @@ contract BloomToken is Ownable{
 
     // extra
     mapping (address => bool) exception;   // Mapping of wallets who are allowed to receive or send tokens.
-
+    address public owner;
 
     // -----------
     // Constructor
@@ -56,7 +56,8 @@ contract BloomToken is Ownable{
         _name = nameInput;
         _symbol = symbolInput;
 
-        transferOwnership(admin);
+        owner = msg.sender;   
+        //transferOwnership(admin);
         exception[admin] = true;
 
         balances[admin] = _totalSupply;
@@ -181,6 +182,14 @@ contract BloomToken is Ownable{
     function updateException(address _wallet, bool _isAnException) external onlyOwner() {
         require(exception[_wallet] != _isAnException, "BloomToken.sol::updateException() wallet is already of bool _isAnException");
         exception[_wallet] = _isAnException;
+    }
+
+    /// @notice This is used to change the owner's wallet address. Used to give ownership to another wallet.
+    /// @param  _owner is the new owner address.
+    function transferOwnership(address _owner) external onlyOwner {
+        require(_owner != address(0), "TaxToken.sol::transferOwnership(), _owner == 0.");
+        emit OwnershipTransferred(owner, _owner);
+        owner = _owner;
     }
 
 }
