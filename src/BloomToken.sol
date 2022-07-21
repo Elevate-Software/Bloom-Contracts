@@ -12,7 +12,7 @@ import "./OpenZeppelin/Ownable.sol";
 ///         - Which contracts should be allowed to mint/burn, and process for enabling mint/burn permissions.
 ///         - Keep track of given tokens on a per-project basis?
 
-contract BloomToken {
+contract BloomToken is Ownable {
 
     // TODO: Figure out which wallets need to be an exception
     //       Owner wallet and dead wallet only ???
@@ -33,7 +33,6 @@ contract BloomToken {
 
     // extra
     mapping (address => bool) exception;   // Mapping of wallets who are allowed to receive or send tokens.
-    address public owner;
 
     // -----------
     // Constructor
@@ -56,8 +55,7 @@ contract BloomToken {
         _name = nameInput;
         _symbol = symbolInput;
 
-        owner = admin;   
-        //transferOwnership(admin);
+        transferOwnership(admin);
         exception[admin] = true;
 
         balances[admin] = _totalSupply;
@@ -72,8 +70,6 @@ contract BloomToken {
  
     /// @dev Emitted during transfer() or transferFrom().
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
-    /// @dev Ownership transferred.
-    event OwnershipTransferred(address indexed currentAdmin, address indexed newAdmin);
 
     // ---------
     // Modifiers
@@ -91,11 +87,6 @@ contract BloomToken {
         _;
     }
 
-    /// @dev onlyOwner() is used if msg.sender MUST be owner.
-    modifier onlyOwner {
-       require(msg.sender == owner, "ERR: BloomToken.sol, onlyOwner()"); 
-       _;
-    }
 
     // ---------
     // Functions
@@ -188,14 +179,6 @@ contract BloomToken {
     function updateException(address _wallet, bool _isAnException) external onlyOwner() {
         require(exception[_wallet] != _isAnException, "BloomToken.sol::updateException() wallet is already of bool _isAnException");
         exception[_wallet] = _isAnException;
-    }
-
-    /// @notice This is used to change the owner's wallet address. Used to give ownership to another wallet.
-    /// @param  _owner is the new owner address.
-    function transferOwnership(address _owner) external onlyOwner {
-        require(_owner != address(0), "BloomToken.sol::transferOwnership(), _owner == 0.");
-        emit OwnershipTransferred(owner, _owner);
-        owner = _owner;
     }
 
 }

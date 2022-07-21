@@ -88,15 +88,13 @@ contract BloomTokenTest is DSTest, Utility {
 
     // ~ mint() Testing ~
 
-    // Test mint() to admin
-    function test_mint() public {
-        //bloomToken.transferOwnership(address(dev));
-
+    // Test mint() from an admin
+    function test_bloomToken_mint() public {
         // Pre-state check.
         assertEq(bloomToken.balanceOf(address(bob)), 0);
         assertEq(bloomToken.totalSupply(), 100000 ether);
 
-        // Mint 10 tokens to admin.
+        // Mint 10 tokens to bob.
         assert(dev.try_mint(address(bloomToken), address(bob), 10 ether));
 
         //Post-state check.
@@ -104,6 +102,23 @@ contract BloomTokenTest is DSTest, Utility {
         assertEq(bloomToken.totalSupply(), 100010 ether);
     }
 
+    // Test mint() from a non-admin
+    function test_bloomToken_mint_restrictions() public {
+        // Joe attempts to mint himself tokens
+        assert(!joe.try_mint(address(bloomToken), address(joe), 10 ether));
+
+        // Val attempts to mint himself tokens
+        assert(!val.try_mint(address(bloomToken), address(val), 10 ether));
+
+        // Bob attempts to mint himself tokens
+        assert(!bob.try_mint(address(bloomToken), address(bob), 10 ether));
+
+        // Admin cannot mint to 0 address
+        assert(!dev.try_mint(address(bloomToken), address(0), 10 ether));
+
+        // Admin can successfully perform a mint
+        assert(dev.try_mint(address(bloomToken), address(dev), 10 ether));
+    }
 
     // ~ burn ~
 
