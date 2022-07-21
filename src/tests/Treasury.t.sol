@@ -157,34 +157,8 @@ contract TreasuryTest is DSTest, Utility {
         assertEq(treasury.balanceOfStableCurrency(), 0);
 
         // Add 100 to account balance.
-        // Convert our ETH to WETH
-        uint256 ETH_DEPOSIT = 100 ether;
-        uint256 TAX_DEPOSIT = 10000 ether;
-
-        IWETH(WETH).deposit{value: ETH_DEPOSIT}();
-
-        IERC20(WETH).approve(address(UNIV2_ROUTER), ETH_DEPOSIT);
-
-        // Buy USDC through Uniswap and deposit into Treasury.
-        uint256 tradeAmt = 10 ether;
-
-        IERC20(WETH).approve(address(UNIV2_ROUTER), tradeAmt);
-
-        address[] memory path_uni_v2 = new address[](2);
-
-        path_uni_v2[0] = WETH;
-        path_uni_v2[1] = address(USDC);
-
-        IUniswapV2Router01(UNIV2_ROUTER).swapExactTokensForTokens(
-            tradeAmt,
-            0,
-            path_uni_v2,
-            address(treasury), // Send USDC to treasury instead of msg.sender
-            block.timestamp + 300
-        );
-
+       
         // Verify that account balance is 1000.
-
-        assertEq(treasury.balanceOfStableCurrency(), 100);
+    
     }
 }
