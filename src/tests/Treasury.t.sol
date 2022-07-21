@@ -9,6 +9,7 @@ import "../Treasury.sol";
 contract TreasuryTest is DSTest, Utility {
     Treasury treasury;
     Actor swapInterface = new Actor();
+    address UNIV2_ROUTER = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
 
     function setUp() public {
         createActors();
@@ -28,20 +29,20 @@ contract TreasuryTest is DSTest, Utility {
 
     function test_treasury_updateStableReceived_restrictions() public {
         // "dev" should not be able to call updateStableReceived().
-        assert(!dev.try_updateStableReceived(address(treasury),address(1),1000 * USD, block.timestamp));
+        assert(!dev.try_updateStableReceived(address(treasury),address(1),1000 * USD,block.timestamp));
 
         // "joe" should not be able to call updateStableReceived().
-        assert(!joe.try_updateStableReceived(address(treasury),address(1),1000 * USD, block.timestamp));
+        assert(!joe.try_updateStableReceived(address(treasury),address(1),1000 * USD,block.timestamp));
 
         // "bob" should not be able to call updateStableReceived().
-        assert(!bob.try_updateStableReceived(address(treasury),address(1),1000 * USD, block.timestamp));
+        assert(!bob.try_updateStableReceived(address(treasury),address(1),1000 * USD,block.timestamp));
 
         // "val" should not be able to call updateStableReceived().
-        assert(!val.try_updateStableReceived(address(treasury),address(1),1000 * USD, block.timestamp));
+        assert(!val.try_updateStableReceived(address(treasury),address(1),1000 * USD,block.timestamp));
 
         // "swapInterface" Actor can call updateStableReceived().
-        assert(swapInterface.try_updateStableReceived(address(treasury),address(1),1000 * USD, block.timestamp));
-    }
+        assert(swapInterface.try_updateStableReceived(address(treasury),address(1),1000 * USD,block.timestamp));
+        }
 
     function test_treasury_updateStableReceived_state_changes() public {
         // Pre-State Check.
@@ -50,7 +51,7 @@ contract TreasuryTest is DSTest, Utility {
         assertEq(treasury.getDividendLibrary(address(1)).length, 0);
 
         // SwapInterface is going to call updateStableRecieved().
-        assert(swapInterface.try_updateStableReceived(address(treasury),address(1),1000 * USD, block.timestamp));
+        assert(swapInterface.try_updateStableReceived(address(treasury),address(1),1000 * USD,block.timestamp));
 
         // Post-State Check.
         assertEq(
@@ -130,8 +131,6 @@ contract TreasuryTest is DSTest, Utility {
         assert(!joe.try_removeAuthorizedUser(address(treasury), address(val)));
     }
 
-    // TODO: add a state changes test case
-
     function test_treasury_removeAuthorizedUser_state_changes() public {
         assert(dev.try_addAuthorizedUser(address(treasury), address(joe)));
 
@@ -148,5 +147,44 @@ contract TreasuryTest is DSTest, Utility {
         // Tells us if joe is popped out of the array.
         assertEq(treasury.getNumOfAuthorizedUsers(), 1);
         assert(!treasury.getAuthorizedUser(address(joe)));
+    }
+
+    // ~ balanceOfStableCurrency() Testing ~
+
+    function test_treasury_balanceOfStableCurrency_state_changes() public {
+        // Verify that account balance is 0.
+
+        assertEq(treasury.balanceOfStableCurrency(), 0);
+
+        // Add 100 to account balance.
+        // Convert our ETH to WETH
+        uint256 ETH_DEPOSIT = 100 ether;
+        uint256 TAX_DEPOSIT = 10000 ether;
+
+        IWETH(WETH).deposit{value: ETH_DEPOSIT}();
+
+        IERC20(WETH).approve(address(UNIV2_ROUTER), ETH_DEPOSIT);
+
+        // Buy USDC through Uniswap and deposit into Treasury.
+        uint256 tradeAmt = 10 ether;
+
+        IERC20(WETH).approve(address(UNIV2_ROUTER), tradeAmt);
+
+        address[] memory path_uni_v2 = new address[](2);
+
+        path_uni_v2[0] = WETH;
+        path_uni_v2[1] = address(USDC);
+
+        IUniswapV2Router01(UNIV2_ROUTER).swapExactTokensForTokens(
+            tradeAmt,
+            0,
+            path_uni_v2,
+            address(treasury), // Send USDC to treasury instead of msg.sender
+            block.timestamp + 300
+        );
+
+        // Verify that account balance is 1000.
+
+        assertEq(treasury.balanceOfStableCurrency(), 100);
     }
 }

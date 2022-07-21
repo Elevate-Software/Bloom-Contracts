@@ -2,6 +2,7 @@
 pragma solidity ^0.8.6;
 
 import "./OpenZeppelin/Ownable.sol";
+import { IERC20 } from "./interfaces/InterfacesAggregated.sol";
 
 /// @dev    The Treasury contract will be the focal point within the protocol.
 ///         This contract will keep track of all accounting
@@ -210,7 +211,7 @@ contract Treasury is Ownable {
 
     /// @notice deposits dividend payment to a depository.
     /// @param  _amntDividends stores the amount of dividends to be paid to an investor.
-    function depositDividends(uint _amntDividends) public onlyOwner() {
+    function depositDividends(uint256 _amntDividends) public onlyOwner() {
 
     }
 
@@ -219,8 +220,8 @@ contract Treasury is Ownable {
 
     /// @notice Should return contract balance of stableCurrency.
     /// @return uint Amount of stableCurrency that is inside contract.
-    function balanceOfStableCurrency() public view returns (uint) {
-
+    function balanceOfStableCurrency() public view returns (uint256) {
+      return IERC20(stableCurrency).balanceOf(address(this));
     }
 
     /// @notice used to get the InvestorData of a specific wallet.

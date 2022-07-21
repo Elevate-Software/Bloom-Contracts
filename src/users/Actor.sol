@@ -42,5 +42,7 @@ contract Actor {
         string memory sig = "removeAuthorizedUser(address)";
         (ok,) = address(treasury).call(abi.encodeWithSignature(sig, wallet));
     }
+
+    
     
 }
