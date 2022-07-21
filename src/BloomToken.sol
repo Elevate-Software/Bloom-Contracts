@@ -56,7 +56,7 @@ contract BloomToken {
         _name = nameInput;
         _symbol = symbolInput;
 
-        owner = msg.sender;   
+        owner = admin;   
         //transferOwnership(admin);
         exception[admin] = true;
 
