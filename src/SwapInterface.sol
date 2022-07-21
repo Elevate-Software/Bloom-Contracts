@@ -13,6 +13,28 @@ import "./OpenZeppelin/Ownable.sol";
 ///         To Be Determinted:
 ///          - Take a fee?
 ///          - Will we ever remove data from the mappings: ie, how does a project end?
+
+
+
+// ----------
+// Interfaces
+// ----------
+
+// DAI, USDC, USDT
+interface curve3PoolStableSwap {
+    function exchange(int128 i, int128 j, uint256 dx, uint256 min_dy) external;
+}
+
+interface curveFraxUSDCStableSwap {
+    function exchange(int128 i, int128 j, uint256 dx, uint256 min_dy) external; //TODO: is this correct?
+}
+
+interface curveTriCrypto2StableSwap {
+    function exchange(int128 i, int128 j, uint256 dx, uint256 min_dy) external; //TODO: is this correct?
+}
+
+/// other interfaces here :)
+
 contract SwapInterface is Ownable{
 
     // ---------------
@@ -38,6 +60,20 @@ contract SwapInterface is Ownable{
         uint stableCoinEquivalent;
         uint timeUnix;
     }
+
+    // contract addresses
+    address constant DAI   = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
+    address constant USDC  = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+    address constant USDT  = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
+    address constant FRAX  = 0x853d955aCEf822Db058eb8505911ED77F175b99e;
+    address constant WETH  = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+    address constant WBTC  = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599;
+
+    // swap addresses
+    address constant _3PoolSwapAddress = 0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7;
+    address constant _FraxUSDCPoolSwapAddress = 0xDcEF968d416a41Cdac0ED8702fAC8128A64241A2;
+    address constant _tricrypto2PoolSwapAddress = 0x80466c64868E1ab14a1Ddf27A676C3fcBE638Fe5;
+
 
     // -----------
     // Constructor
@@ -119,6 +155,43 @@ contract SwapInterface is Ownable{
         require(whitelistedToken[asset] == true, "swapInterface.sol::swap() Swapping is disabled for this token.");
 
         // swap given asset to stable currency (USDC).
+
+        if (asset == DAI) {
+            // swap 1 for 2
+            ERC20(asset).approve(_3PoolSwapAddress, amount);
+            curve3PoolStableSwap(_3PoolSwapAddress).exchange(int128(1), int128(2), amount, min_dy);
+        }
+
+        else if (asset == USDT) {
+            // swap 3 for 2
+            ERC20(asset).approve(_3PoolSwapAddress, amount);
+            curve3PoolStableSwap(_3PoolSwapAddress).exchange(int128(3), int128(2), amount, min_dy);
+        }
+
+        else if (asset == FRAX) {
+            // swap 1 for 2
+            ERC20(asset).approve(_FraxUSDCPoolSwapAddress, amount);
+            curveFraxUSDCStableSwap(_FraxUSDCPoolSwapAddress).exchange(int128(1), int128(2), amount, min_dy);
+        }
+
+        else if (asset == WETH) {
+            // swap 3 for 1, 3 for 2
+            ERC20(asset).approve(_tricrypto2PoolSwapAddress, amount);
+            curveTriCrypto2StableSwap(_tricrypto2PoolSwapAddress).exchange(int128(3), int128(1), amount, min_dy);
+            curve3PoolStableSwap(_3PoolSwapAddress).exchange(3, 2, amount, min_dy);
+        }
+
+        else if (asset == WBTC) {
+            // swap 2 for 1, 3 for 2
+            ERC20(asset).approve(_tricrypto2PoolSwapAddress, amount);
+            curveTriCrypto2StableSwap(_tricrypto2PoolSwapAddress).exchange(int128(2), int128(1), amount, min_dy);
+            curve3PoolStableSwap(_3PoolSwapAddress).exchange(int128(3), int128(2), amount, min_dy);
+        }
+
+        // if asset is USDC send it to contract
+        else if (asset == USDC) {
+            // no swap
+        }
 
         // Pools resources //
         // All Pools: https://curve.fi/pools
