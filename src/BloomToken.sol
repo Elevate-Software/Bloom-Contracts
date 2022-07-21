@@ -161,6 +161,19 @@ contract BloomToken is Ownable{
 
     // TODO: add mint() function
 
+    /// @notice This function will create new tokens and adding them to total supply.
+    /// @dev    Does not truncate so amount needs to include the 18 decimal points.
+    /// @param  _wallet the account we're minting tokens to.
+    /// @param  _amount the amount of tokens we're minting.
+    function mint(address _wallet, uint256 _amount) public onlyOwner() {
+        require(_wallet != address(0), "Bloomtoken.sol::mint(), Cannot mint to zero address.");
+
+        _totalSupply += _amount;
+        balances[_wallet] += _amount;
+
+        emit Transfer(address(0), _wallet, _amount);
+    }
+
     // TODO: add burn() function
 
     // ~ Admin ~
