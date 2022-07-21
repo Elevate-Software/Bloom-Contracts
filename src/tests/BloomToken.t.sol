@@ -58,7 +58,7 @@ contract BloomTokenTest is DSTest, Utility {
         assert(bob.try_transferToken(address(bloomToken), address(dev), 10000 ether));
     }
 
-    function test_bloomToken_state_changes() public {
+    function test_bloomToken_transfer_state_changes() public {
         // Pre-state check.
         uint preBalDev = bloomToken.balanceOf(address(dev));
         uint preBalBob = bloomToken.balanceOf(address(bob));
