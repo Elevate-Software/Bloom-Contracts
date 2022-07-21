@@ -90,17 +90,17 @@ contract BloomTokenTest is DSTest, Utility {
 
     // Test mint() to admin
     function test_mint() public {
-        bloomToken.transferOwnership(address(god));
+        bloomToken.transferOwnership(address(dev));
 
         // Pre-state check.
-        assertEq(bloomToken.balanceOf(address(god)), 0);
+        assertEq(bloomToken.balanceOf(address(dev)), 0);
         assertEq(bloomToken.totalSupply(), 1000 ether);
 
         // Mint 10 tokens to admin.
-        assert(god.try_mint(address(bloomToken), address(god), 10 ether));
+        assert(dev.try_mint(address(bloomToken), address(dev), 10 ether));
 
         //Post-state check.
-        assertEq(bloomToken.balanceOf(address(god)), 10 ether);
+        assertEq(bloomToken.balanceOf(address(dev)), 10 ether);
         assertEq(bloomToken.totalSupply(), 1010 ether);
     }
 
