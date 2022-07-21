@@ -12,7 +12,7 @@ import "./OpenZeppelin/Ownable.sol";
 ///         - Which contracts should be allowed to mint/burn, and process for enabling mint/burn permissions.
 ///         - Keep track of given tokens on a per-project basis?
 
-contract BloomToken is Ownable{
+contract BloomToken {
 
     // TODO: Figure out which wallets need to be an exception
     //       Owner wallet and dead wallet only ???
@@ -72,7 +72,8 @@ contract BloomToken is Ownable{
  
     /// @dev Emitted during transfer() or transferFrom().
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
-
+    /// @dev Ownership transferred.
+    event OwnershipTransferred(address indexed currentAdmin, address indexed newAdmin);
 
     // ---------
     // Modifiers
@@ -90,6 +91,11 @@ contract BloomToken is Ownable{
         _;
     }
 
+    /// @dev onlyOwner() is used if msg.sender MUST be owner.
+    modifier onlyOwner {
+       require(msg.sender == owner, "ERR: BloomToken.sol, onlyOwner()"); 
+       _;
+    }
 
     // ---------
     // Functions
@@ -187,7 +193,7 @@ contract BloomToken is Ownable{
     /// @notice This is used to change the owner's wallet address. Used to give ownership to another wallet.
     /// @param  _owner is the new owner address.
     function transferOwnership(address _owner) external onlyOwner {
-        require(_owner != address(0), "TaxToken.sol::transferOwnership(), _owner == 0.");
+        require(_owner != address(0), "BloomToken.sol::transferOwnership(), _owner == 0.");
         emit OwnershipTransferred(owner, _owner);
         owner = _owner;
     }
