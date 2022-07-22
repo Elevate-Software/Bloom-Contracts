@@ -211,6 +211,13 @@ contract Treasury is Ownable {
         stableCurrency = _stableCurrency;
     }
 
+    /// @notice updates bloomToken to _newBloomToken.
+    /// @param _newBloomToken stores new bloomToken.
+    function updateBloomToken(address _newBloomToken) external onlyOwner() {
+        require(bloomToken != _newBloomToken, "Treasury.sol::updateBloomToken() token address is already set");
+        bloomToken = _newBloomToken;
+    }
+
     /// @notice updates swapInterfaceContract.
     /// @param _newSwapInterface stores contract address of SwapInterface.sol.
     function updateSwapInterface(address _newSwapInterface) public onlyOwner() {
