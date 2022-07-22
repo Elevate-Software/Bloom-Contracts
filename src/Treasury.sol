@@ -68,13 +68,14 @@ contract Treasury is Ownable {
     constructor (
         address _stableCurrency,
         address _swapInterface,
-        address _bloomToken
+        address _bloomToken,
+        address _admin
     ) {
         stableCurrency = _stableCurrency;
         swapInterfaceContract = _swapInterface;
         bloomToken = _bloomToken;
 
-        transferOwnership(msg.sender);
+        transferOwnership(_admin);
         authorizedUsers.push(owner());
     }
 
@@ -126,13 +127,14 @@ contract Treasury is Ownable {
         emit StableCoinReceived(_wallet, _amount);
         investorLibrary[_wallet].totalAmountInvested += _amount;
         investorLibrary[_wallet].investmentLibrary.push(InvestmentReceipt(_amount, _timeUnix));
+        //mintBloom
     }
 
     /// @notice Mints BLOOM tokens to a certain investor.
     /// @dev    Calls BloomToken.sol::mint().
     /// @param _wallet The account to mint tokens for.
     /// @param _amount The amount of Bloom tokens to mint for account.
-    function mintBloom(address _wallet, uint256 _amount) public {
+    function mintBloom(address _wallet, uint256 _amount) internal {
         IERC20(bloomToken).mint(_wallet, _amount);
     }
 

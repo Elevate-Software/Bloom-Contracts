@@ -34,6 +34,8 @@ contract BloomToken is Ownable {
     // extra
     mapping (address => bool) exception;   // Mapping of wallets who are allowed to receive or send tokens.
 
+    address public treasury;   // Stores the address of Treasury.sol
+
     // -----------
     // Constructor
     // -----------
@@ -84,6 +86,12 @@ contract BloomToken is Ownable {
     modifier isExceptionTri(address sender, address from, address to) {
         require(exception[sender] == true || exception[from] == true || exception[to] == true,
         "BloomToken.sol::isException() token is soulbound. Sender nor receiver is an exception");
+        _;
+    }
+
+    modifier isTreasury(address sender) {
+        require(treasury == sender,
+        "BloomToken.sol::isTreasury() msg.sender is not Treasury");
         _;
     }
 
@@ -163,7 +171,7 @@ contract BloomToken is Ownable {
     /// @dev    Does not truncate so amount needs to include the 18 decimal points.
     /// @param  _wallet the account we're minting tokens to.
     /// @param  _amount the amount of tokens we're minting.
-    function mint(address _wallet, uint256 _amount) public onlyOwner() {
+    function mint(address _wallet, uint256 _amount) external isTreasury(msg.sender) {
         require(_wallet != address(0), "Bloomtoken.sol::mint(), Cannot mint to zero address.");
 
         _totalSupply += _amount;
@@ -179,6 +187,10 @@ contract BloomToken is Ownable {
     function updateException(address _wallet, bool _isAnException) external onlyOwner() {
         require(exception[_wallet] != _isAnException, "BloomToken.sol::updateException() wallet is already of bool _isAnException");
         exception[_wallet] = _isAnException;
+    }
+
+    function setTreasury(address _treasury) external onlyOwner() {
+        treasury = _treasury;
     }
 
 }

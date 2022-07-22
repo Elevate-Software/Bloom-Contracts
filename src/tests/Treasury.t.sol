@@ -6,16 +6,33 @@ import "./Utility.sol";
 
 import "../Treasury.sol";
 
+import "../BloomToken.sol";
+
 contract TreasuryTest is DSTest, Utility {
     Treasury treasury;
+    BloomToken bloomToken;
+
     Actor swapInterface = new Actor();
 
     function setUp() public {
         createActors();
 
-        treasury = new Treasury(USDC, address(swapInterface));
+        bloomToken = new BloomToken(
+            100000, // NOTE: DO NOT ADD 18 ZEROS, when deployed set to 0
+            18,
+            "BloomToken",
+            "BLOOM",
+            address(dev)
+        );
 
-        treasury.transferOwnership(address(dev));
+        treasury = new Treasury(
+            USDC,
+            address(swapInterface),
+            address(bloomToken),
+            address(dev)
+        );
+
+        assert(dev.try_setTreasury(address(bloomToken), address(treasury)));
     }
 
     function test_treasury_init_state() public {

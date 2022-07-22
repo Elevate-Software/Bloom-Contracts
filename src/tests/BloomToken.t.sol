@@ -8,6 +8,7 @@ import "../BloomToken.sol";
 
 contract BloomTokenTest is DSTest, Utility {
     BloomToken bloomToken;
+    Actor treasury = new Actor();
 
     function setUp() public {
 
@@ -25,6 +26,7 @@ contract BloomTokenTest is DSTest, Utility {
             address(dev)
         );
 
+        assert(dev.try_setTreasury(address(bloomToken), address(treasury)));
     }
     
     function test_bloomToken_init_state() public {
@@ -89,13 +91,13 @@ contract BloomTokenTest is DSTest, Utility {
     // ~ mint() Testing ~
 
     // Test mint() from an admin
-    function test_bloomToken_mint() public {
+    function test_bloomToken_mint_state_changes() public {
         // Pre-state check.
         assertEq(bloomToken.balanceOf(address(bob)), 0);
         assertEq(bloomToken.totalSupply(), 100000 ether);
 
         // Mint 10 tokens to bob.
-        assert(dev.try_mint(address(bloomToken), address(bob), 10 ether));
+        assert(treasury.try_mint(address(bloomToken), address(bob), 10 ether));
 
         //Post-state check.
         assertEq(bloomToken.balanceOf(address(bob)), 10 ether);
@@ -113,11 +115,14 @@ contract BloomTokenTest is DSTest, Utility {
         // Bob attempts to mint himself tokens
         assert(!bob.try_mint(address(bloomToken), address(bob), 10 ether));
 
+        // Admin cannot perform a mint
+        assert(!dev.try_mint(address(bloomToken), address(dev), 10 ether));
+
         // Admin cannot mint to 0 address
-        assert(!dev.try_mint(address(bloomToken), address(0), 10 ether));
+        assert(!treasury.try_mint(address(bloomToken), address(0), 10 ether));
 
         // Admin can successfully perform a mint
-        assert(dev.try_mint(address(bloomToken), address(dev), 10 ether));
+        assert(treasury.try_mint(address(bloomToken), address(dev), 10 ether));
     }
 
     // ~ burn ~
