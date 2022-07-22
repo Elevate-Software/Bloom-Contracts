@@ -128,6 +128,7 @@ contract Treasury is Ownable {
         investorLibrary[_wallet].totalAmountInvested += _amount;
         investorLibrary[_wallet].investmentLibrary.push(InvestmentReceipt(_amount, _timeUnix));
         //mintBloom
+        mintBloom(_wallet, _amount);
     }
 
     /// @notice Mints BLOOM tokens to a certain investor.

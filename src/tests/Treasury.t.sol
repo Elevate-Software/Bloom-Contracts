@@ -18,7 +18,7 @@ contract TreasuryTest is DSTest, Utility {
         createActors();
 
         bloomToken = new BloomToken(
-            100000, // NOTE: DO NOT ADD 18 ZEROS, when deployed set to 0
+            0, // NOTE: DO NOT ADD 18 ZEROS, when deployed set to 0
             18,
             "BloomToken",
             "BLOOM",
@@ -65,26 +65,21 @@ contract TreasuryTest is DSTest, Utility {
         assertEq(treasury.getInvestorData(address(1)).totalAmountInvested, 0);
         assertEq(treasury.getInvestmentLibrary(address(1)).length, 0);
         assertEq(treasury.getDividendLibrary(address(1)).length, 0);
+        assertEq(IERC20(address(bloomToken)).totalSupply(), 0);
+        assertEq(IERC20(address(bloomToken)).balanceOf(address(1)), 0);
 
         // SwapInterface is going to call updateStableRecieved().
         assert(swapInterface.try_updateStableReceived(address(treasury),address(1),1000 * USD, block.timestamp));
 
         // Post-State Check.
-        assertEq(
-            treasury.getInvestorData(address(1)).totalAmountInvested,
-            1000 * USD
-        );
+        assertEq(treasury.getInvestorData(address(1)).totalAmountInvested,1000 * USD);
         assertEq(treasury.getInvestmentLibrary(address(1)).length, 1);
         assertEq(treasury.getDividendLibrary(address(1)).length, 0);
 
-        assertEq(
-            treasury.getInvestmentLibrary(address(1))[0].amountInvested,
-            1000 * USD
-        );
-        assertEq(
-            treasury.getInvestmentLibrary(address(1))[0].timeUnix,
-            block.timestamp
-        );
+        assertEq(treasury.getInvestmentLibrary(address(1))[0].amountInvested,1000 * USD);
+        assertEq(treasury.getInvestmentLibrary(address(1))[0].timeUnix,block.timestamp);
+        assertEq(IERC20(address(bloomToken)).totalSupply(), 1000 * USD);
+        assertEq(IERC20(address(bloomToken)).balanceOf(address(1)), 1000 * USD);
     }
 
     // ~ mintBloom() Testing ~
@@ -164,4 +159,6 @@ contract TreasuryTest is DSTest, Utility {
         assertEq(treasury.getNumOfAuthorizedUsers(), 1);
         assert(!treasury.getAuthorizedUser(address(joe)));
     }
+
+   
 }
