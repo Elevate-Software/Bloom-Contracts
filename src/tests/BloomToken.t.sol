@@ -18,7 +18,7 @@ contract BloomTokenTest is DSTest, Utility {
         // val - Admin/authorizedUser
 
         bloomToken = new BloomToken(
-            100000, // NOTE: DO NOT ADD 18 ZEROS, when deployed set to 0
+            100000, // NOTE: DO NOT ADD 18 ZEROS, when deployed set to 0.
             18,
             "BloomToken",
             "BLOOM",
@@ -49,10 +49,10 @@ contract BloomTokenTest is DSTest, Utility {
         // "bob" cannot transfer tokens to a non-exception wallet.
         assert(!bob.try_transferToken(address(bloomToken), address(joe), 1000 ether));
 
-        // "bob" cannot transfer more tokens than what he's currently holding
+        // "bob" cannot transfer more tokens than what he's currently holding.
         assert(!bob.try_transferToken(address(bloomToken), address(dev), 20000 ether));
 
-        // "bob" CAN transfer his tokens to the owner wallet since owner is an exception
+        // "bob" CAN transfer his tokens to the owner wallet since owner is an exception.
         // TODO: Consider not allowing tokens to be sent anywhere except burn address?
         //       this might be sufficient. Up for discussion.
         assert(bob.try_transferToken(address(bloomToken), address(dev), 10000 ether));
@@ -88,7 +88,7 @@ contract BloomTokenTest is DSTest, Utility {
 
     // ~ mint() Testing ~
 
-    // Test mint() from an admin
+    // Test mint() from an admin.
     function test_bloomToken_mint() public {
         // Pre-state check.
         assertEq(bloomToken.balanceOf(address(bob)), 0);
@@ -104,24 +104,59 @@ contract BloomTokenTest is DSTest, Utility {
 
     // Test mint() from a non-admin
     function test_bloomToken_mint_restrictions() public {
-        // Joe attempts to mint himself tokens
+        // Joe attempts to mint himself tokens.
         assert(!joe.try_mint(address(bloomToken), address(joe), 10 ether));
 
-        // Val attempts to mint himself tokens
+        // Val attempts to mint himself tokens.
         assert(!val.try_mint(address(bloomToken), address(val), 10 ether));
 
-        // Bob attempts to mint himself tokens
+        // Bob attempts to mint himself tokens.
         assert(!bob.try_mint(address(bloomToken), address(bob), 10 ether));
 
-        // Admin cannot mint to 0 address
+        // Admin cannot mint to 0 address.
         assert(!dev.try_mint(address(bloomToken), address(0), 10 ether));
 
-        // Admin can successfully perform a mint
+        // Admin can successfully perform a mint.
         assert(dev.try_mint(address(bloomToken), address(dev), 10 ether));
     }
 
     // ~ burn ~
 
-    // TODO
+    // Test mint() from an admin
+    function test_bloomToken_burn() public {
+        // Mint Bloom tokens for testing.
+        assert(dev.try_mint(address(bloomToken), address(bob), 10 ether));
+
+        //Verify balance and supply.
+        assertEq(bloomToken.balanceOf(address(bob)), 10 ether);
+        assertEq(bloomToken.totalSupply(), 100010 ether);
+
+        assert(dev.try_burn(address(bloomToken), address(bob), 10 ether));
+
+        //Verify balance and supply.
+        assertEq(bloomToken.balanceOf(address(bob)), 0 ether);
+        assertEq(bloomToken.totalSupply(), 100000 ether);
+    }
+
+    // Test burn() from a non-admin
+    function test_bloomToken_burn_restrictions() public {
+        // Mint Bloom tokens for testing.
+        assert(dev.try_mint(address(bloomToken), address(dev), 10 ether));
+
+        // Joe attempts to burn himself tokens.
+        assert(!joe.try_burn(address(bloomToken), address(joe), 10 ether));
+
+        // Val attempts to burn himself tokens.
+        assert(!val.try_burn(address(bloomToken), address(val), 10 ether));
+
+        // Bob attempts to burn himself tokens.
+        assert(!bob.try_burn(address(bloomToken), address(bob), 10 ether));
+
+        // Admin cannot burn to 0 address.
+        assert(!dev.try_burn(address(bloomToken), address(0), 10 ether));
+
+        // Admin can successfully perform a burn.
+        assert(dev.try_burn(address(bloomToken), address(dev), 10 ether));
+    }
 
 }

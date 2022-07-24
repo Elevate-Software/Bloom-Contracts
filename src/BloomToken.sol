@@ -157,8 +157,6 @@ contract BloomToken is Ownable {
 
     // ~ ERC20 mint() and burn() ~
 
-    // TODO: add mint() function
-
     /// @notice This function will create new tokens and adding them to total supply.
     /// @dev    Does not truncate so amount needs to include the 18 decimal points.
     /// @param  _wallet the account we're minting tokens to.
@@ -172,7 +170,22 @@ contract BloomToken is Ownable {
         emit Transfer(address(0), _wallet, _amount);
     }
 
-    // TODO: add burn() function
+    /// @notice This function will destroy existing tokens and deduct them from total supply.
+    /// @dev    Does not truncate so amount needs to include the 18 decimal points.
+    /// @param  _wallet the account we're burning tokens from.
+    /// @param  _amount the amount of tokens we're burning.
+
+    /// TODO: Update from public onlyOwner to onlyTreasury
+    function burn(address _wallet, uint256 _amount) public onlyOwner() {
+        require(_wallet != address(0), "TaxToken.sol::burn(), Cannot burn to zero address.");
+        uint256 accountBalance = balances[_wallet];
+        require(accountBalance >= _amount, "TaxToken.sol::burn(), Burn amount exceeds balance.");
+
+        balances[_wallet] = accountBalance - _amount;
+        _totalSupply -= _amount;
+        
+        emit Transfer(_wallet, address(0), _amount);
+    }
 
     // ~ Admin ~
 

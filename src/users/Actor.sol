@@ -47,6 +47,11 @@ contract Actor {
         (ok,) = address(token).call(abi.encodeWithSignature(sig, account, amt));
     }
 
+    function try_burn(address token, address account, uint amt) external returns (bool ok) {
+        string memory sig = "burn(address,uint256)";
+        (ok,) = address(token).call(abi.encodeWithSignature(sig, account, amt));
+    }
+
     // ~ swapInterface ~
 
     function try_updateStableReceived(address treasury, address _wallet, uint256 _amount, uint256 _timeUnix) external returns (bool ok) {
