@@ -125,6 +125,7 @@ contract Treasury is Ownable {
     /// @param _timeUnix time unix of when investment occured.
     function updateStableReceived(address _wallet, uint _amount, uint _timeUnix) public isSwapInterface{
         emit StableCoinReceived(_wallet, _amount);
+        // TODO: Consider creating a constant decimal point precision (Edge case: If USDC changes to DAI which is 18 decimals, investor data will be scewed)
         investorLibrary[_wallet].totalAmountInvested += _amount;
         investorLibrary[_wallet].investmentLibrary.push(InvestmentReceipt(_amount, _timeUnix));
         //mintBloom
@@ -136,6 +137,14 @@ contract Treasury is Ownable {
     /// @param _wallet The account to mint tokens for.
     /// @param _amount The amount of Bloom tokens to mint for account.
     function mintBloom(address _wallet, uint256 _amount) internal {
+        require(_wallet != address(0), "Treasury.sol::mintBloom() cannot mint tokens to null address.");
+        require(_amount > 0, "Treasury.sol::mintBloom() _amount must be greater than 0.");
+
+        uint decimalsStable = IERC20(stableCurrency).decimals();
+        uint decimalsBloom = IERC20(bloomToken).decimals();
+        uint conversionPoints = decimalsBloom - decimalsStable;
+        _amount = _amount * (10 ** conversionPoints);
+
         IERC20(bloomToken).mint(_wallet, _amount);
     }
 
