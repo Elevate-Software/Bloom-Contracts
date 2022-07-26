@@ -2,6 +2,7 @@
 pragma solidity ^0.8.6;
 
 import "./OpenZeppelin/Ownable.sol";
+import { IERC20 } from "./interfaces/InterfacesAggregated.sol";
 
 /// @dev    The Treasury contract will be the focal point within the protocol.
 ///         This contract will keep track of all accounting
@@ -23,8 +24,10 @@ contract Treasury is Ownable {
     // State Variables
     // ---------------
 
-    address public stableCurrency;                               /// @notice Used to store address of coin used to deposit/payout from Treasury.
-    address public swapInterfaceContract;                        /// @notice Used to store the address of SwapInterface.sol
+    address public stableCurrency;           /// @notice Used to store address of coin used to deposit/payout from Treasury.
+    address public swapInterfaceContract;    /// @notice Used to store the address of SwapInterface.sol
+    address public bloomToken;               /// @notice Used to store the address of the Bloom Token.
+   
 
     // TODO: Consider making investorLibrary private -> write get functions for investorData points
     mapping(address => InvestorData) public investorLibrary;     /// @notice Mapping of Investor wallets to their investment data held in InvestorData.
@@ -64,12 +67,15 @@ contract Treasury is Ownable {
     /// @param _stableCurrency Used to store address of stablecoin used in contract (default is USDC).
     constructor (
         address _stableCurrency,
-        address _swapInterface
+        address _swapInterface,
+        address _bloomToken,
+        address _admin
     ) {
         stableCurrency = _stableCurrency;
         swapInterfaceContract = _swapInterface;
+        bloomToken = _bloomToken;
 
-        transferOwnership(msg.sender);
+        transferOwnership(_admin);
         authorizedUsers.push(owner());
     }
 
@@ -119,14 +125,27 @@ contract Treasury is Ownable {
     /// @param _timeUnix time unix of when investment occured.
     function updateStableReceived(address _wallet, uint _amount, uint _timeUnix) public isSwapInterface{
         emit StableCoinReceived(_wallet, _amount);
+        // TODO: Consider creating a constant decimal point precision (Edge case: If USDC changes to DAI which is 18 decimals, investor data will be scewed)
         investorLibrary[_wallet].totalAmountInvested += _amount;
         investorLibrary[_wallet].investmentLibrary.push(InvestmentReceipt(_amount, _timeUnix));
+        //mintBloom
+        mintBloom(_wallet, _amount);
     }
 
     /// @notice Mints BLOOM tokens to a certain investor.
     /// @dev    Calls BloomToken.sol::mint().
-    function mintBloom() public {
+    /// @param _wallet The account to mint tokens for.
+    /// @param _amount The amount of Bloom tokens to mint for account.
+    function mintBloom(address _wallet, uint256 _amount) internal {
+        require(_wallet != address(0), "Treasury.sol::mintBloom() cannot mint tokens to null address.");
+        require(_amount > 0, "Treasury.sol::mintBloom() _amount must be greater than 0.");
 
+        uint decimalsStable = IERC20(stableCurrency).decimals();
+        uint decimalsBloom = IERC20(bloomToken).decimals();
+        uint conversionPoints = decimalsBloom - decimalsStable;
+        _amount = _amount * (10 ** conversionPoints);
+
+        IERC20(bloomToken).mint(_wallet, _amount);
     }
 
     /// @notice Allows the contract owner to add authorized wallets to the authorizedUser[] array.
@@ -200,6 +219,13 @@ contract Treasury is Ownable {
     /// @param _stableCurrency stores stableCurrency.
     function updateStableCurrency(address _stableCurrency) public onlyOwner() {
         stableCurrency = _stableCurrency;
+    }
+
+    /// @notice updates bloomToken to _newBloomToken.
+    /// @param _newBloomToken stores new bloomToken.
+    function updateBloomToken(address _newBloomToken) external onlyOwner() {
+        require(bloomToken != _newBloomToken, "Treasury.sol::updateBloomToken() token address is already set");
+        bloomToken = _newBloomToken;
     }
 
     /// @notice updates swapInterfaceContract.
