@@ -124,10 +124,16 @@ contract Treasury is Ownable {
     /// @param _amount amount of stable coin received from account.
     /// @param _timeUnix time unix of when investment occured.
     function updateStableReceived(address _wallet, uint _amount, uint _timeUnix) public isSwapInterface{
+        uint256 newAmount = _amount;
+        if(IERC20(stableCurrency).decimals() != 6) {
+            uint decimalStable = IERC20(stableCurrency).decimals();
+            uint difference = decimalStable - 6;
+            newAmount = newAmount / 10 ** difference;
+        }
         emit StableCoinReceived(_wallet, _amount);
         // TODO: Consider creating a constant decimal point precision (Edge case: If USDC changes to DAI which is 18 decimals, investor data will be scewed)
-        investorLibrary[_wallet].totalAmountInvested += _amount;
-        investorLibrary[_wallet].investmentLibrary.push(InvestmentReceipt(_amount, _timeUnix));
+        investorLibrary[_wallet].totalAmountInvested += newAmount;
+        investorLibrary[_wallet].investmentLibrary.push(InvestmentReceipt(newAmount, _timeUnix));
         //mintBloom
         mintBloom(_wallet, _amount);
     }
