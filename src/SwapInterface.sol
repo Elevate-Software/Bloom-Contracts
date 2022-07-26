@@ -2,6 +2,7 @@
 pragma solidity ^0.8.6;
 
 import "./OpenZeppelin/Ownable.sol";
+import { IERC20, IWETH } from "./interfaces/InterfacesAggregated.sol";
 
 // Curve Docs: https://curve.readthedocs.io/
 
@@ -35,21 +36,6 @@ interface curveTriCrypto2StableSwap {
     function exchange(int128 i, int128 j, uint256 dx, uint256 min_dy) external; //TODO: is this correct?
 }
 
-interface IERC20 {
-
-    function totalSupply() external view returns (uint256);
-    function balanceOf(address account) external view returns (uint256);
-    function allowance(address owner, address spender) external view returns (uint256);
-
-    function transfer(address recipient, uint256 amount) external returns (bool);
-    function approve(address spender, uint256 amount) external returns (bool);
-    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
-
-
-    event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(address indexed owner, address indexed spender, uint256 value);
-}
-
 
 /// other interfaces here :)
 
@@ -74,9 +60,9 @@ contract SwapInterface is Ownable{
     /// @param
     struct InvestmentData {
         address currency;
-        uint amountInvested;
-        uint stableCoinEquivalent;
-        uint timeUnix;
+        uint256 amountInvested;
+        uint256 stableCoinEquivalent;
+        uint256 timeUnix;
     }
 
     // contract addresses
@@ -162,50 +148,51 @@ contract SwapInterface is Ownable{
     }
 
     /// @notice Allows user to invest tokens into the REIT.
+    /// @param asset The address of the token being invested.
     /// @param amount The amount of the token being invested.
-    /// @param token The address of the token being invested.
-    function invest(uint amount, address token) public isWhitelistedWallet() {
-
+    function invest(address asset, uint256 amount) public isWhitelistedWallet() {
+        swap(asset, amount);
     }
 
     /// @notice Calls the Curve API to swap incoming assets to USDC.
-    function swap(address asset, uint amount) internal {
+    // TODO: should we swap for a given amount, or just try to use the contract's currency balance?
+    function swap(address asset, uint256 amount) internal {
         require(whitelistedToken[asset] == true, "swapInterface.sol::swap() Swapping is disabled for this token.");
 
-        uint min_dy = 1;    // TODO: Figure out what this should actually be if not 1.
+        uint256 min_dy = 1;    // TODO: Figure out what this should actually be if not 1.
 
         // swap given asset to stable currency (USDC).
 
         if (asset == DAI) {
-            // swap 1 for 2
+            // swap 0 for 1
             IERC20(asset).approve(_3PoolSwapAddress, amount);
-            curve3PoolStableSwap(_3PoolSwapAddress).exchange(int128(1), int128(2), amount, min_dy);
+            curve3PoolStableSwap(_3PoolSwapAddress).exchange(int128(0), int128(1), amount, min_dy);
         }
 
         else if (asset == USDT) {
-            // swap 3 for 2
+            // swap 2 for 1
             IERC20(asset).approve(_3PoolSwapAddress, amount);
-            curve3PoolStableSwap(_3PoolSwapAddress).exchange(int128(3), int128(2), amount, min_dy);
+            curve3PoolStableSwap(_3PoolSwapAddress).exchange(int128(2), int128(1), amount, min_dy);
         }
 
         else if (asset == FRAX) {
-            // swap 1 for 2
+            // swap 0 for 1
             IERC20(asset).approve(_FraxUSDCPoolSwapAddress, amount);
-            curveFraxUSDCStableSwap(_FraxUSDCPoolSwapAddress).exchange(int128(1), int128(2), amount, min_dy);
+            curveFraxUSDCStableSwap(_FraxUSDCPoolSwapAddress).exchange(int128(0), int128(1), amount, min_dy);
         }
 
         else if (asset == WETH) {
-            // swap 3 for 1, 3 for 2
+            // swap 2 for 0, 2 for 1
             IERC20(asset).approve(_tricrypto2PoolSwapAddress, amount);
-            curveTriCrypto2StableSwap(_tricrypto2PoolSwapAddress).exchange(int128(3), int128(1), amount, min_dy);
-            curve3PoolStableSwap(_3PoolSwapAddress).exchange(3, 2, amount, min_dy);
+            curveTriCrypto2StableSwap(_tricrypto2PoolSwapAddress).exchange(int128(2), int128(0), amount, min_dy);
+            curve3PoolStableSwap(_3PoolSwapAddress).exchange(int128(2), int128(1), amount, min_dy);
         }
 
         else if (asset == WBTC) {
-            // swap 2 for 1, 3 for 2
+            // swap 1 for 0, 2 for 1
             IERC20(asset).approve(_tricrypto2PoolSwapAddress, amount);
-            curveTriCrypto2StableSwap(_tricrypto2PoolSwapAddress).exchange(int128(2), int128(1), amount, min_dy);
-            curve3PoolStableSwap(_3PoolSwapAddress).exchange(int128(3), int128(2), amount, min_dy);
+            curveTriCrypto2StableSwap(_tricrypto2PoolSwapAddress).exchange(int128(1), int128(0), amount, min_dy);
+            curve3PoolStableSwap(_3PoolSwapAddress).exchange(int128(2), int128(1), amount, min_dy);
         }
 
         // if asset is USDC send it to contract
@@ -261,8 +248,8 @@ contract SwapInterface is Ownable{
     // ~ View Functions ~
 
     /// @notice Should return contract balance of stableCurrency.
-    /// @return uint Amount of stableCurrency that is inside contract.
-    function balanceOfStableCurrency() public view returns (uint) {
+    /// @return uint256 Amount of stableCurrency that is inside contract.
+    function balanceOfStableCurrency() public view returns (uint256) {
 
     }
 }
