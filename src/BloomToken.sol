@@ -12,7 +12,7 @@ import "./OpenZeppelin/Ownable.sol";
 ///         - Which contracts should be allowed to mint/burn, and process for enabling mint/burn permissions.
 ///         - Keep track of given tokens on a per-project basis?
 
-contract BloomToken is Ownable{
+contract BloomToken is Ownable {
 
     // TODO: Figure out which wallets need to be an exception
     //       Owner wallet and dead wallet only ???
@@ -34,6 +34,7 @@ contract BloomToken is Ownable{
     // extra
     mapping (address => bool) exception;   // Mapping of wallets who are allowed to receive or send tokens.
 
+    address public treasury;   // Stores the address of Treasury.sol
 
     // -----------
     // Constructor
@@ -72,7 +73,6 @@ contract BloomToken is Ownable{
     /// @dev Emitted during transfer() or transferFrom().
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
 
-
     // ---------
     // Modifiers
     // ---------
@@ -86,6 +86,12 @@ contract BloomToken is Ownable{
     modifier isExceptionTri(address sender, address from, address to) {
         require(exception[sender] == true || exception[from] == true || exception[to] == true,
         "BloomToken.sol::isException() token is soulbound. Sender nor receiver is an exception");
+        _;
+    }
+
+    modifier isTreasury(address sender) {
+        require(treasury == sender,
+        "BloomToken.sol::isTreasury() msg.sender is not Treasury");
         _;
     }
 
@@ -161,6 +167,19 @@ contract BloomToken is Ownable{
 
     // TODO: add mint() function
 
+    /// @notice This function will create new tokens and adding them to total supply.
+    /// @dev    Does not truncate so amount needs to include the 18 decimal points.
+    /// @param  _wallet the account we're minting tokens to.
+    /// @param  _amount the amount of tokens we're minting.
+    function mint(address _wallet, uint256 _amount) external isTreasury(msg.sender) {
+        require(_wallet != address(0), "Bloomtoken.sol::mint(), Cannot mint to zero address.");
+
+        _totalSupply += _amount;
+        balances[_wallet] += _amount;
+
+        emit Transfer(address(0), _wallet, _amount);
+    }
+
     // TODO: add burn() function
 
     // ~ Admin ~
@@ -168,6 +187,10 @@ contract BloomToken is Ownable{
     function updateException(address _wallet, bool _isAnException) external onlyOwner() {
         require(exception[_wallet] != _isAnException, "BloomToken.sol::updateException() wallet is already of bool _isAnException");
         exception[_wallet] = _isAnException;
+    }
+
+    function setTreasury(address _treasury) external onlyOwner() {
+        treasury = _treasury;
     }
 
 }

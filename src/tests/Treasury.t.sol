@@ -6,16 +6,33 @@ import "./Utility.sol";
 
 import "../Treasury.sol";
 
+import "../BloomToken.sol";
+
 contract TreasuryTest is DSTest, Utility {
     Treasury treasury;
+    BloomToken bloomToken;
+
     Actor swapInterface = new Actor();
 
     function setUp() public {
         createActors();
 
-        treasury = new Treasury(USDC, address(swapInterface));
+        bloomToken = new BloomToken(
+            0, // NOTE: DO NOT ADD 18 ZEROS, when deployed set to 0
+            18,
+            "BloomToken",
+            "BLOOM",
+            address(dev)
+        );
 
-        treasury.transferOwnership(address(dev));
+        treasury = new Treasury(
+            USDC,
+            address(swapInterface),
+            address(bloomToken),
+            address(dev)
+        );
+
+        assert(dev.try_setTreasury(address(bloomToken), address(treasury)));
     }
 
     function test_treasury_init_state() public {
@@ -41,6 +58,12 @@ contract TreasuryTest is DSTest, Utility {
 
         // "swapInterface" Actor can call updateStableReceived().
         assert(swapInterface.try_updateStableReceived(address(treasury),address(1),1000 * USD, block.timestamp));
+
+        // "swapInterface" cannot mint tokens to the dead address.
+        assert(!swapInterface.try_updateStableReceived(address(treasury), address(0), 1000 * USD, block.timestamp));
+
+        // "swapInterface" cannot mint 0 tokens.
+        assert(!swapInterface.try_updateStableReceived(address(treasury), address(1), 0, block.timestamp));
     }
 
     function test_treasury_updateStableReceived_state_changes() public {
@@ -48,32 +71,21 @@ contract TreasuryTest is DSTest, Utility {
         assertEq(treasury.getInvestorData(address(1)).totalAmountInvested, 0);
         assertEq(treasury.getInvestmentLibrary(address(1)).length, 0);
         assertEq(treasury.getDividendLibrary(address(1)).length, 0);
+        assertEq(IERC20(address(bloomToken)).totalSupply(), 0);
+        assertEq(IERC20(address(bloomToken)).balanceOf(address(1)), 0);
 
         // SwapInterface is going to call updateStableRecieved().
-        assert(swapInterface.try_updateStableReceived(address(treasury),address(1),1000 * USD, block.timestamp));
+        assert(swapInterface.try_updateStableReceived(address(treasury),address(1),1674 * USD, block.timestamp));
 
         // Post-State Check.
-        assertEq(
-            treasury.getInvestorData(address(1)).totalAmountInvested,
-            1000 * USD
-        );
+        assertEq(treasury.getInvestorData(address(1)).totalAmountInvested,1674 * USD);
         assertEq(treasury.getInvestmentLibrary(address(1)).length, 1);
         assertEq(treasury.getDividendLibrary(address(1)).length, 0);
 
-        assertEq(
-            treasury.getInvestmentLibrary(address(1))[0].amountInvested,
-            1000 * USD
-        );
-        assertEq(
-            treasury.getInvestmentLibrary(address(1))[0].timeUnix,
-            block.timestamp
-        );
-    }
-
-    // ~ mintBloom() Testing ~
-
-    function test_treasury_mintBloom_restrictions() public {
-        // Write test function. tryFunc is written
+        assertEq(treasury.getInvestmentLibrary(address(1))[0].amountInvested,1674 * USD);
+        assertEq(treasury.getInvestmentLibrary(address(1))[0].timeUnix,block.timestamp);
+        assertEq(IERC20(address(bloomToken)).totalSupply(), 1674 * WAD);
+        assertEq(IERC20(address(bloomToken)).balanceOf(address(1)), 1674 * WAD);
     }
 
     // ~ addAuthorizedUser() Testing ~
@@ -147,4 +159,6 @@ contract TreasuryTest is DSTest, Utility {
         assertEq(treasury.getNumOfAuthorizedUsers(), 1);
         assert(!treasury.getAuthorizedUser(address(joe)));
     }
+
+   
 }

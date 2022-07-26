@@ -42,6 +42,16 @@ contract Actor {
 
     }
 
+    function try_mint(address token, address account, uint amt) external returns (bool ok) {
+        string memory sig = "mint(address,uint256)";
+        (ok,) = address(token).call(abi.encodeWithSignature(sig, account, amt));
+    }
+
+    function try_setTreasury(address token, address treasury) external returns (bool ok) {
+        string memory sig = "setTreasury(address)";
+        (ok,) = address(token).call(abi.encodeWithSignature(sig, treasury));
+    }
+
     // ~ swapInterface ~
 
     function try_updateStableReceived(address treasury, address _wallet, uint256 _amount, uint256 _timeUnix) external returns (bool ok) {
@@ -105,5 +115,6 @@ contract Actor {
         string memory sig = "removeAuthorizedUser(address)";
         (ok,) = address(treasury).call(abi.encodeWithSignature(sig, wallet));
     }
+
     
 }
