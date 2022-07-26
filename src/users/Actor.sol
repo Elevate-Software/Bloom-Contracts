@@ -104,6 +104,11 @@ contract Actor {
         (ok,) = address(swapInterface).call(abi.encodeWithSignature(sig, _tokenAddress, _allowed));
     }
 
+    function try_invest(address swapInterface, address _tokenAddress, uint256 _amount) external returns (bool ok) {
+        string memory sig = "invest(address,uint256)";
+        (ok,) = address(swapInterface).call(abi.encodeWithSignature(sig, _tokenAddress, _amount));
+    }
+
     // ~ treasury ~
         
     function try_addAuthorizedUser(address treasury, address wallet) external returns (bool ok) {

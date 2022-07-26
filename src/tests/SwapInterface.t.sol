@@ -7,11 +7,14 @@ import "./Utility.sol";
 
 import "../SwapInterface.sol";
 
+import { IERC20 } from "../interfaces/InterfacesAggregated.sol";
+
 contract SwapInterfaceTest is DSTest, Utility {
     SwapInterface swapInterface;
 
     function setUp() public {
         createActors();
+        setUpTokens();
 
         swapInterface = new SwapInterface(
             USDC,
@@ -20,6 +23,8 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         dev.try_addWalletToAuthorizedUsers(address(swapInterface), address(val));
         dev.try_addWalletToWhitelist(address(swapInterface), address(bob));
+        dev.try_updateTokenWhitelist(address(swapInterface), DAI, true);
+        mint("DAI", address(swapInterface), 1000 ether);
     }
 
     function test_swapInterface_init_state() public {
@@ -27,6 +32,7 @@ contract SwapInterfaceTest is DSTest, Utility {
         assertEq(swapInterface.owner(), address(dev));
         assertTrue(swapInterface.isAuthorizedUser(address(val)));
         assertTrue(swapInterface.whitelistedWallet(address(bob)));
+        //TODO: check that we minted our DAI
     }
 
 
@@ -273,5 +279,23 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         // "dev" should be able to call updateTokenWhitelist().
         assert(dev.try_updateTokenWhitelist(address(swapInterface), DAI, true));
+    }
+
+    // ~ Swap Testing
+    function test_swapInterface_swap_state_change() public {
+        // DAI -> USDC
+
+        // pre-state (no USDC)
+        assertEq(IERC20(USDC).balanceOf(address(swapInterface)), 0 ether);
+        assertEq(IERC20(DAI).balanceOf(address(swapInterface)), 1000 ether);
+
+        // state change
+        assert(bob.try_invest(address(swapInterface), DAI, 1000 ether));
+
+        // post-state (swapped to USDC)
+        assertGt(IERC20(USDC).balanceOf(address(swapInterface)), 0 ether);
+        assertEq(IERC20(DAI).balanceOf(address(swapInterface)), 0 ether);
+        emit Debug("Balance of Swap Interface USDC: ", IERC20(USDC).balanceOf(address(swapInterface)));
+
     }
 }
