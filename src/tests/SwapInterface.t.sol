@@ -280,18 +280,23 @@ contract SwapInterfaceTest is DSTest, Utility {
     }
 
     // ~ Swap Testing
+    // NOTE: Must call swapInterface::swap() through try_invest since its an internal function.
     function test_swapInterface_swap_state_change() public {
 
+        // ----------
+        // DAI swap()
+        // ----------
+
+        // Allow DAI to be swapped
         dev.try_updateTokenWhitelist(address(swapInterface), DAI, true);
         mint("DAI", address(swapInterface), 1000 ether);
-
-        // DAI -> USDC
 
         // pre-state (no USDC)
         assertEq(IERC20(USDC).balanceOf(address(swapInterface)), 0 ether);
         assertEq(IERC20(DAI).balanceOf(address(swapInterface)), 1000 ether);
 
-        // state change
+        // state change -
+        // What are we doing?
         assert(bob.try_invest(address(swapInterface), DAI, 1000 ether));
 
         // post-state (swapped to USDC)
