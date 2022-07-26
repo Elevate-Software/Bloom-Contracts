@@ -2,7 +2,7 @@
 pragma solidity ^0.8.6;
 
 import "./OpenZeppelin/Ownable.sol";
-import { IERC20, IWETH } from "./interfaces/InterfacesAggregated.sol";
+import { IERC20, IUniswapV2Router01, IWETH } from "./interfaces/InterfacesAggregated.sol";
 
 // Curve Docs: https://curve.readthedocs.io/
 

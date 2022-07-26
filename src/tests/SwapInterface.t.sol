@@ -7,7 +7,7 @@ import "./Utility.sol";
 
 import "../SwapInterface.sol";
 
-import { IERC20 } from "../interfaces/InterfacesAggregated.sol";
+import { IERC20, IUniswapV2Router01, IWETH } from "../interfaces/InterfacesAggregated.sol";
 
 contract SwapInterfaceTest is DSTest, Utility {
     SwapInterface swapInterface;
