@@ -305,4 +305,11 @@ contract SwapInterfaceTest is DSTest, Utility {
         emit Debug("Balance of Swap Interface USDC: ", IERC20(USDC).balanceOf(address(swapInterface)));
 
     }
+    // ETH -> WETH -> USDT -> USDC
+    // WETH -> USDT -> USDC
+    // wBTC -> USDT -> USDC
+    // FRAX -> USDC
+    // DAI -> USDC
+    // USDT -> USDC
+    // accept USDC
 }
