@@ -25,13 +25,31 @@ interface curve3PoolStableSwap {
     function exchange(int128 i, int128 j, uint256 dx, uint256 min_dy) external;
 }
 
+// FRAX, USDT
 interface curveFraxUSDCStableSwap {
     function exchange(int128 i, int128 j, uint256 dx, uint256 min_dy) external; //TODO: is this correct?
 }
 
+// USDT, WBTC, WETH
 interface curveTriCrypto2StableSwap {
     function exchange(int128 i, int128 j, uint256 dx, uint256 min_dy) external; //TODO: is this correct?
 }
+
+interface IERC20 {
+
+    function totalSupply() external view returns (uint256);
+    function balanceOf(address account) external view returns (uint256);
+    function allowance(address owner, address spender) external view returns (uint256);
+
+    function transfer(address recipient, uint256 amount) external returns (bool);
+    function approve(address spender, uint256 amount) external returns (bool);
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+
+
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+}
+
 
 /// other interfaces here :)
 
@@ -154,36 +172,38 @@ contract SwapInterface is Ownable{
     function swap(address asset, uint amount) internal {
         require(whitelistedToken[asset] == true, "swapInterface.sol::swap() Swapping is disabled for this token.");
 
+        uint min_dy = 1;    // TODO: Figure out what this should actually be if not 1.
+
         // swap given asset to stable currency (USDC).
 
         if (asset == DAI) {
             // swap 1 for 2
-            ERC20(asset).approve(_3PoolSwapAddress, amount);
+            IERC20(asset).approve(_3PoolSwapAddress, amount);
             curve3PoolStableSwap(_3PoolSwapAddress).exchange(int128(1), int128(2), amount, min_dy);
         }
 
         else if (asset == USDT) {
             // swap 3 for 2
-            ERC20(asset).approve(_3PoolSwapAddress, amount);
+            IERC20(asset).approve(_3PoolSwapAddress, amount);
             curve3PoolStableSwap(_3PoolSwapAddress).exchange(int128(3), int128(2), amount, min_dy);
         }
 
         else if (asset == FRAX) {
             // swap 1 for 2
-            ERC20(asset).approve(_FraxUSDCPoolSwapAddress, amount);
+            IERC20(asset).approve(_FraxUSDCPoolSwapAddress, amount);
             curveFraxUSDCStableSwap(_FraxUSDCPoolSwapAddress).exchange(int128(1), int128(2), amount, min_dy);
         }
 
         else if (asset == WETH) {
             // swap 3 for 1, 3 for 2
-            ERC20(asset).approve(_tricrypto2PoolSwapAddress, amount);
+            IERC20(asset).approve(_tricrypto2PoolSwapAddress, amount);
             curveTriCrypto2StableSwap(_tricrypto2PoolSwapAddress).exchange(int128(3), int128(1), amount, min_dy);
             curve3PoolStableSwap(_3PoolSwapAddress).exchange(3, 2, amount, min_dy);
         }
 
         else if (asset == WBTC) {
             // swap 2 for 1, 3 for 2
-            ERC20(asset).approve(_tricrypto2PoolSwapAddress, amount);
+            IERC20(asset).approve(_tricrypto2PoolSwapAddress, amount);
             curveTriCrypto2StableSwap(_tricrypto2PoolSwapAddress).exchange(int128(2), int128(1), amount, min_dy);
             curve3PoolStableSwap(_3PoolSwapAddress).exchange(int128(3), int128(2), amount, min_dy);
         }
