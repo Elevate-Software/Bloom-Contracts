@@ -23,8 +23,6 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         dev.try_addWalletToAuthorizedUsers(address(swapInterface), address(val));
         dev.try_addWalletToWhitelist(address(swapInterface), address(bob));
-        dev.try_updateTokenWhitelist(address(swapInterface), DAI, true);
-        mint("DAI", address(swapInterface), 1000 ether);
     }
 
     function test_swapInterface_init_state() public {
@@ -283,6 +281,10 @@ contract SwapInterfaceTest is DSTest, Utility {
 
     // ~ Swap Testing
     function test_swapInterface_swap_state_change() public {
+
+        dev.try_updateTokenWhitelist(address(swapInterface), DAI, true);
+        mint("DAI", address(swapInterface), 1000 ether);
+
         // DAI -> USDC
 
         // pre-state (no USDC)
