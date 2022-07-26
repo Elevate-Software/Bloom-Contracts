@@ -3,6 +3,8 @@ pragma solidity ^0.8.6;
 
 import "./OpenZeppelin/Ownable.sol";
 
+import { IERC20 } from "./interfaces/InterfacesAggregated.sol";
+
 // Curve Docs: https://curve.readthedocs.io/
 
 /// @dev    This contract allows investors to invest ETH, DAI, USDT, or USDC.
@@ -60,7 +62,7 @@ contract SwapInterface is Ownable{
     // Events
     // ------
 
-    // TODO: Add any necessary events.
+    event StableCurrencyUpdated(address currentStable, address newStable);
 
     // ---------
     // Modifiers
@@ -120,9 +122,13 @@ contract SwapInterface is Ownable{
     }
 
     /// @notice Changes the stable currency address.
-    /// @param newAddress The new stable currency contact address.
-    function changeStableCurrency(address newAddress) public onlyOwner() {
-        stableCurrency = newAddress;
+    /// @param _stableCurrency The new stable currency contact address.
+    function changeStableCurrency(address _stableCurrency) public onlyOwner() {
+        require(stableCurrency != _stableCurrency, "Treasury.sol::updateStableCurrency() stableCurrency should not equal _stableCurrency.");
+        require(IERC20(_stableCurrency).decimals() >= 6, "Treasury.sol::updateStableCurrency() decimal precision of _stableCurrency needs to be >= 6.");
+        
+        emit StableCurrencyUpdated(stableCurrency, _stableCurrency);
+        stableCurrency = _stableCurrency;
     }
 
     /// @notice Allows owner to disable smart contract operations.
