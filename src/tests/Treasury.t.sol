@@ -191,17 +191,12 @@ contract TreasuryTest is DSTest, Utility {
         // Pre-State Check.
         // Assert the balance of stableCurrency inside of the treasury is equal to 0.
 
-        emit Debug("Balance Of Stable Currency:", IERC20(treasury.stableCurrency()).balanceOf(address(treasury)));
-
         assertEq(IERC20(treasury.stableCurrency()).balanceOf(address(treasury)), 0);
-
 
         // State-Change.
         // Add funds to contract balance of stableCurrency inside Treasury.sol.
 
         mint("USDC", address(treasury), 1000 * USD);
-
-
 
         // Post-State Check.
         // Assert the balance of stableCurrency inside of the treasury is equal to 1000.
