@@ -125,6 +125,7 @@ contract Treasury is Ownable {
     /// @param _timeUnix time unix of when investment occured.
     function updateStableReceived(address _wallet, uint _amount, uint _timeUnix) public isSwapInterface{
         uint256 newAmount = _amount;
+        
         if(IERC20(stableCurrency).decimals() != 6) {
             uint decimalStable = IERC20(stableCurrency).decimals();
             uint difference = decimalStable - 6;
