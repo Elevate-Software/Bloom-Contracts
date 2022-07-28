@@ -2,6 +2,7 @@
 pragma solidity ^0.8.6;
 
 import "./OpenZeppelin/Ownable.sol";
+import { SafeERC20 } from "./OpenZeppelin/SafeERC20.sol";
 import { IERC20, IUniswapV2Router01, IWETH } from "./interfaces/InterfacesAggregated.sol";
 
 // Curve Docs: https://curve.readthedocs.io/
@@ -44,6 +45,8 @@ contract SwapInterface is Ownable{
     // ---------------
     // State Variables
     // ---------------
+
+    using SafeERC20 for IERC20;
 
     address public stableCurrency;   /// @notice Used to store address of coin used to deposit/payout from Treasury.
     bool public contractEnabled;     /// @notice Bool for contract enabling / disabling investments
@@ -171,7 +174,7 @@ contract SwapInterface is Ownable{
 
         else if (asset == USDT) {
             // swap 2 for 1
-            IERC20(asset).approve(_3PoolSwapAddress, amount);
+            IERC20(asset).safeApprove(_3PoolSwapAddress, amount);
             curve3PoolStableSwap(_3PoolSwapAddress).exchange(int128(2), int128(1), amount, min_dy);
         }
 
