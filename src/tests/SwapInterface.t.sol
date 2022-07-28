@@ -293,16 +293,16 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         // pre-state (no USDC)
         // verifies pre-state balances of USDC and DAI.
-        assertEq(IERC20(USDC).balanceOf(address(swapInterface)), 0 ether);
+        assertEq(IERC20(USDC).balanceOf(address(swapInterface)), 0 * USD);
         assertEq(IERC20(DAI).balanceOf(address(swapInterface)), 1000 ether);
 
         // state change -
-        // What are we doing?
+        // calling invest() to execute the swap from DAI to USDC.
         assert(bob.try_invest(address(swapInterface), DAI, 1000 ether));
 
         // post-state (swapped to USDC)
         // verifies post-state balances of USDC and DAI.
-        assertGt(IERC20(USDC).balanceOf(address(swapInterface)), 0 ether);
+        assertGt(IERC20(USDC).balanceOf(address(swapInterface)), 0 * USD);
         assertEq(IERC20(DAI).balanceOf(address(swapInterface)), 0 ether);
         emit Debug("Balance of Swap Interface USDC: ", IERC20(USDC).balanceOf(address(swapInterface)));
 
@@ -316,21 +316,21 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         // Allow USDT to be swapped setup.
         dev.try_updateTokenWhitelist(address(swapInterface), USDT, true);
-        mint("USDT", address(swapInterface), 1000 ether);
+        mint("USDT", address(swapInterface), 1000 * USD);
 
         // pre-state (no USDC)
         // verifies pre-state balances of USDC and USDT.
-        assertEq(IERC20(USDC).balanceOf(address(swapInterface)), 0 ether);
-        assertEq(IERC20(USDT).balanceOf(address(swapInterface)), 1000 ether);
+        assertEq(IERC20(USDC).balanceOf(address(swapInterface)), 0 * USD);
+        assertEq(IERC20(USDT).balanceOf(address(swapInterface)), 1000 * USD);
 
         // state change -
-        // What are we doing?
-        assert(bob.try_invest(address(swapInterface), USDT, 1000 ether));
+        // calling invest() to execute the swap from USDT to USDC.
+        assert(bob.try_invest(address(swapInterface), USDT, 1000 * USD));
 
         // post-state (swapped to USDC)
         // verifies post-state balances of USDC and USDT.
-        assertGt(IERC20(USDC).balanceOf(address(swapInterface)), 0 ether);
-        assertEq(IERC20(USDT).balanceOf(address(swapInterface)), 0 ether);
+        assertGt(IERC20(USDC).balanceOf(address(swapInterface)), 0 * USD);
+        assertEq(IERC20(USDT).balanceOf(address(swapInterface)), 0 * USD);
         emit Debug("Balance of Swap Interface USDC: ", IERC20(USDC).balanceOf(address(swapInterface)));
 
     }
@@ -347,44 +347,17 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         // pre-state (no USDC)
         // verifies pre-state balances of USDC and FRAX.
-        assertEq(IERC20(USDC).balanceOf(address(swapInterface)), 0 ether);
+        assertEq(IERC20(USDC).balanceOf(address(swapInterface)), 0 * USD);
         assertEq(IERC20(FRAX).balanceOf(address(swapInterface)), 1000 ether);
 
         // state change -
-        // What are we doing?
+        // calling invest() to execute the swap from FRAX to USDC.
         assert(bob.try_invest(address(swapInterface), FRAX, 1000 ether));
 
         // post-state (swapped to USDC)
         // verifies post-state balances of USDC and FRAX.
-        assertGt(IERC20(USDC).balanceOf(address(swapInterface)), 0 ether);
+        assertGt(IERC20(USDC).balanceOf(address(swapInterface)), 0 * USD);
         assertEq(IERC20(FRAX).balanceOf(address(swapInterface)), 0 ether);
-        emit Debug("Balance of Swap Interface USDC: ", IERC20(USDC).balanceOf(address(swapInterface)));
-
-    }
-
-    function test_swapInterface_swap_state_change_WBTC() public {
-
-        // ----------
-        // WBTC swap()
-        // ----------
-
-        // Allow WBTC to be swapped setup.
-        dev.try_updateTokenWhitelist(address(swapInterface), WBTC, true);
-        mint("WBTC", address(swapInterface), 1000 ether);
-
-        // pre-state (no USDC)
-        // verifies pre-state balances of USDC and WBTC.
-        assertEq(IERC20(USDC).balanceOf(address(swapInterface)), 0 ether);
-        assertEq(IERC20(WBTC).balanceOf(address(swapInterface)), 1000 ether);
-
-        // state change -
-        // What are we doing?
-        assert(bob.try_invest(address(swapInterface), WBTC, 1000 ether));
-
-        // post-state (swapped to USDC)
-        // verifies post-state balances of USDC and WBTC.
-        assertGt(IERC20(USDC).balanceOf(address(swapInterface)), 0 ether);
-        assertEq(IERC20(WBTC).balanceOf(address(swapInterface)), 0 ether);
         emit Debug("Balance of Swap Interface USDC: ", IERC20(USDC).balanceOf(address(swapInterface)));
 
     }
@@ -397,21 +370,48 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         // Allow WETH to be swapped setup.
         dev.try_updateTokenWhitelist(address(swapInterface), WETH, true);
-        mint("WETH", address(swapInterface), 1000 ether);
+        mint("WETH", address(swapInterface), 10 ether);
 
         // pre-state (no USDC)
         // verifies pre-state balances of USDC and WETH.
-        assertEq(IERC20(USDC).balanceOf(address(swapInterface)), 0 ether);
-        assertEq(IERC20(WETH).balanceOf(address(swapInterface)), 1000 ether);
+        assertEq(IERC20(USDC).balanceOf(address(swapInterface)), 0 * USD);
+        assertEq(IERC20(WETH).balanceOf(address(swapInterface)), 10 ether);
 
         // state change -
-        // What are we doing?
-        assert(bob.try_invest(address(swapInterface), WETH, 1000 ether));
+        // calling invest() to execute the swap from WETH to USDC.
+        assert(bob.try_invest(address(swapInterface), WETH, 10 ether));
 
         // post-state (swapped to USDC)
         // verifies post-state balances of USDC and WETH.
-        assertGt(IERC20(USDC).balanceOf(address(swapInterface)), 0 ether);
+        assertGt(IERC20(USDC).balanceOf(address(swapInterface)), 0 * USD);
         assertEq(IERC20(WETH).balanceOf(address(swapInterface)), 0 ether);
+        emit Debug("Balance of Swap Interface USDC: ", IERC20(USDC).balanceOf(address(swapInterface)));
+
+    }
+
+    function test_swapInterface_swap_state_change_WBTC() public {
+
+        // ----------
+        // WBTC swap()
+        // ----------
+
+        // Allow WBTC to be swapped setup.
+        dev.try_updateTokenWhitelist(address(swapInterface), WBTC, true);
+        mint("WBTC", address(swapInterface), 10 * BTC);
+
+        // pre-state (no USDC)
+        // verifies pre-state balances of USDC and WBTC.
+        assertEq(IERC20(USDC).balanceOf(address(swapInterface)), 0 * USD);
+        assertEq(IERC20(WBTC).balanceOf(address(swapInterface)), 10  * BTC);
+
+        // state change -
+        // calling invest() to execute the swap from WBTC to USDC.
+        assert(bob.try_invest(address(swapInterface), WBTC, 10  * BTC));
+
+        // post-state (swapped to USDC)
+        // verifies post-state balances of USDC and WBTC.
+        assertGt(IERC20(USDC).balanceOf(address(swapInterface)), 0 * USD);
+        assertEq(IERC20(WBTC).balanceOf(address(swapInterface)), 0  * BTC);
         emit Debug("Balance of Swap Interface USDC: ", IERC20(USDC).balanceOf(address(swapInterface)));
 
     }

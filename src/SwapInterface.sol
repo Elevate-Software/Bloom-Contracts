@@ -34,7 +34,7 @@ interface curveFraxUSDCStableSwap {
 
 // USDT, WBTC, WETH
 interface curveTriCrypto2StableSwap {
-    function exchange(int128 i, int128 j, uint256 dx, uint256 min_dy) external; //TODO: is this correct?
+    function exchange(uint256 i, uint256 j, uint256 dx, uint256 min_dy) external; //TODO: is this correct?
 }
 
 
@@ -45,6 +45,7 @@ contract SwapInterface is Ownable{
     // ---------------
     // State Variables
     // ---------------
+    event Debug(string, uint256);
 
     using SafeERC20 for IERC20;
 
@@ -79,7 +80,7 @@ contract SwapInterface is Ownable{
     // swap addresses
     address constant _3PoolSwapAddress = 0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7;
     address constant _FraxUSDCPoolSwapAddress = 0xDcEF968d416a41Cdac0ED8702fAC8128A64241A2;
-    address constant _tricrypto2PoolSwapAddress = 0x80466c64868E1ab14a1Ddf27A676C3fcBE638Fe5;
+    address constant _tricrypto2PoolSwapAddress = 0xD51a44d3FaE010294C616388b506AcdA1bfAAE46;
 
 
     // -----------
@@ -174,7 +175,7 @@ contract SwapInterface is Ownable{
 
         else if (asset == USDT) {
             // swap 2 for 1
-            IERC20(asset).safeApprove(_3PoolSwapAddress, amount);
+            IERC20(asset).safeApprove(_3PoolSwapAddress, amount);   // NOTE: USDT is not ERC20 compliant, so we use SafeERC20 safeApprove.
             curve3PoolStableSwap(_3PoolSwapAddress).exchange(int128(2), int128(1), amount, min_dy);
         }
 
@@ -187,15 +188,19 @@ contract SwapInterface is Ownable{
         else if (asset == WETH) {
             // swap 2 for 0, 2 for 1
             IERC20(asset).approve(_tricrypto2PoolSwapAddress, amount);
-            curveTriCrypto2StableSwap(_tricrypto2PoolSwapAddress).exchange(int128(2), int128(0), amount, min_dy);
-            curve3PoolStableSwap(_3PoolSwapAddress).exchange(int128(2), int128(1), amount, min_dy);
+            curveTriCrypto2StableSwap(_tricrypto2PoolSwapAddress).exchange(uint256(2), uint256(0), amount, min_dy);
+
+            IERC20(USDT).safeApprove(_3PoolSwapAddress, uint256(IERC20(USDT).balanceOf(address(this))));
+            curve3PoolStableSwap(_3PoolSwapAddress).exchange(int128(2), int128(1), uint256(IERC20(USDT).balanceOf(address(this))), min_dy);
         }
 
         else if (asset == WBTC) {
             // swap 1 for 0, 2 for 1
             IERC20(asset).approve(_tricrypto2PoolSwapAddress, amount);
-            curveTriCrypto2StableSwap(_tricrypto2PoolSwapAddress).exchange(int128(1), int128(0), amount, min_dy);
-            curve3PoolStableSwap(_3PoolSwapAddress).exchange(int128(2), int128(1), amount, min_dy);
+            curveTriCrypto2StableSwap(_tricrypto2PoolSwapAddress).exchange(uint256(1), uint256(0), amount, min_dy);
+
+            IERC20(USDT).safeApprove(_3PoolSwapAddress, uint256(IERC20(USDT).balanceOf(address(this))));
+            curve3PoolStableSwap(_3PoolSwapAddress).exchange(int128(2), int128(1), uint256(IERC20(USDT).balanceOf(address(this))), min_dy);
         }
 
         // if asset is USDC send it to contract
