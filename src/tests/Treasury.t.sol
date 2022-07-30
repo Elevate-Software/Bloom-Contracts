@@ -16,6 +16,7 @@ contract TreasuryTest is DSTest, Utility {
 
     function setUp() public {
         createActors();
+        setUpTokens();
 
         bloomToken = new BloomToken(
             0, // NOTE: DO NOT ADD 18 ZEROS, when deployed set to 0
@@ -201,7 +202,7 @@ contract TreasuryTest is DSTest, Utility {
         // Post-State Check.
         // Assert the balance of stableCurrency inside of the treasury is equal to 1000.
 
-        assertEq(IERC20(treasury.stableCurrency()).balanceOf(address(treasury)), 1000);
+        assertEq(IERC20(treasury.stableCurrency()).balanceOf(address(treasury)), 1000 * USD);
 
     
 
