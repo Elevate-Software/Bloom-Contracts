@@ -50,7 +50,9 @@ contract SwapInterface is Ownable{
     using SafeERC20 for IERC20;
 
     address public stableCurrency;   /// @notice Used to store address of coin used to deposit/payout from Treasury.
-    bool public contractEnabled;     /// @notice Bool for contract enabling / disabling investments
+    bool public contractEnabled;     /// @notice Bool for contract enabling / disabling investments.
+
+    address public Treasury;           /// @notice Used to transfer USDC to treasury.
 
     mapping(address => InvestmentData) private investmentTracker;   /// @notice Tracks wallets and their individual investments made.
     mapping(address => bool) public whitelistedToken;               /// @notice Whitelist for coins accepted for investment.
@@ -77,7 +79,7 @@ contract SwapInterface is Ownable{
     address constant WETH  = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
     address constant WBTC  = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599;
 
-    // swap addresses
+    // curve swap addresses
     address constant _3PoolSwapAddress = 0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7;
     address constant _FraxUSDCPoolSwapAddress = 0xDcEF968d416a41Cdac0ED8702fAC8128A64241A2;
     address constant _tricrypto2PoolSwapAddress = 0xD51a44d3FaE010294C616388b506AcdA1bfAAE46;
@@ -92,9 +94,11 @@ contract SwapInterface is Ownable{
     /// @param _admin Wallet address of owner account.
     constructor (
         address _stableCurrency,
+        address _treasury,
         address _admin
     ) {
         stableCurrency = _stableCurrency;
+        Treasury = _treasury;
 
         transferOwnership(_admin);
         isAuthorizedUser[owner()] = true;
@@ -212,10 +216,10 @@ contract SwapInterface is Ownable{
             curve3PoolStableSwap(_3PoolSwapAddress).exchange(int128(2), int128(1), uint256(IERC20(USDT).balanceOf(address(this))), min_dy);
         }
 
-        // if asset is USDC send it to contract
-        else if (asset == USDC) {
-            // no swap
-        }
+        // USDC doesn't need to be swapped via curve.
+
+        // transfer swapped asset to treasury.
+        IERC20(USDC).transfer(Treasury, IERC20(USDC).balanceOf(address(this)));
 
         // Pools resources //
         // All Pools: https://curve.fi/pools
@@ -260,6 +264,13 @@ contract SwapInterface is Ownable{
     /// @param allowed true to accept investments of this token, false to decline.
     function updateTokenWhitelist(address tokenAddress, bool allowed) public onlyOwner() {
         whitelistedToken[tokenAddress] = allowed;
+    }
+
+    /// @notice Updates address of the Treasury contract.
+    /// @param newAddress The new address of the treasury.
+    function updateTreasury(address newAddress) public onlyOwner() {
+        Treasury = newAddress;
+        // emit event?
     }
 
     // ~ View Functions ~

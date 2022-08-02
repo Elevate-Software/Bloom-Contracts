@@ -18,6 +18,7 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         swapInterface = new SwapInterface(
             USDC,
+            address(joe), // TODO: make treasury actor
             address(dev)
         );
 
@@ -279,9 +280,40 @@ contract SwapInterfaceTest is DSTest, Utility {
         assert(dev.try_updateTokenWhitelist(address(swapInterface), DAI, true));
     }
 
-    // ~ Swap Testing
+    // ~ updateTreasury() testing ~
+
+    function test_swapInterface_updateTreasury_state_change() public {
+        // pre-state
+        // treasury is the expected address.
+        assertEq(swapInterface.Treasury(), address(1));
+
+        // state change
+        // owner changes the address to a new one.
+        assert(dev.try_updateTreasury(address(swapInterface), address(2)));
+
+        // post-state
+        // treasury is the new address.
+        assertEq(swapInterface.Treasury(), address(2));
+    }
+
+    function test_swapInterface_updateTreasury_restrictions() public {
+        // "joe" should not be able to call updateTreasury().
+        assert(!joe.try_updateTreasury(address(swapInterface), address(2)));
+
+        // "bob" should not be able to call updateTreasury().
+        assert(!bob.try_updateTreasury(address(swapInterface), address(2)));
+
+        // "val" should not be able to call updateTreasury().
+        assert(!val.try_updateTreasury(address(swapInterface), address(2)));
+
+        // "dev" should be able to call updateTreasury().
+        assert(dev.try_updateTreasury(address(swapInterface), address(2)));
+    }
+
+    // ~ Invest/Swap Testing ~
+
     // NOTE: Must call swapInterface::swap() through try_invest since its an internal function.
-    function test_swapInterface_swap_state_change_DAI() public {
+    function test_swapInterface_invest_state_change_DAI() public {
 
         // ----------
         // DAI swap()
@@ -294,7 +326,7 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         // pre-state (no USDC)
         // verifies pre-state balances of USDC and DAI.
-        assertEq(IERC20(USDC).balanceOf(address(swapInterface)), 0 * USD);
+        assertEq(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
 
         // state change -
         // calling invest() to execute the swap from DAI to USDC.
@@ -303,12 +335,12 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         // post-state (swapped to USDC)
         // verifies post-state balance of USDC.
-        assertGt(IERC20(USDC).balanceOf(address(swapInterface)), 0 * USD);
-        emit Debug("Balance of Swap Interface USDC: ", IERC20(USDC).balanceOf(address(swapInterface)));
+        assertGt(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
+        emit Debug("Balance of Swap Interface USDC: ", IERC20(USDC).balanceOf(swapInterface.Treasury()));
 
     }
 
-    function test_swapInterface_swap_state_change_USDT() public {
+    function test_swapInterface_invest_state_change_USDT() public {
 
         // ----------
         // USDT swap()
@@ -321,7 +353,7 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         // pre-state (no USDC)
         // verifies pre-state balances of USDC and USDT.
-        assertEq(IERC20(USDC).balanceOf(address(swapInterface)), 0 * USD);
+        assertEq(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
 
         // state change -
         // calling invest() to execute the swap from USDT to USDC.
@@ -330,13 +362,12 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         // post-state (swapped to USDC)
         // verifies post-state balances of USDC and USDT.
-        assertGt(IERC20(USDC).balanceOf(address(swapInterface)), 0 * USD);
-        assertEq(IERC20(USDT).balanceOf(address(swapInterface)), 0 * USD);
-        emit Debug("Balance of Swap Interface USDC: ", IERC20(USDC).balanceOf(address(swapInterface)));
+        assertGt(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
+        emit Debug("Balance of Swap Interface USDC: ", IERC20(USDC).balanceOf(swapInterface.Treasury()));
 
     }
 
-    function test_swapInterface_swap_state_change_FRAX() public {
+    function test_swapInterface_invest_state_change_FRAX() public {
 
         // ----------
         // FRAX swap()
@@ -349,7 +380,7 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         // pre-state (no USDC)
         // verifies pre-state balances of USDC and FRAX.
-        assertEq(IERC20(USDC).balanceOf(address(swapInterface)), 0 * USD);
+        assertEq(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
 
         // state change -
         // calling invest() to execute the swap from FRAX to USDC.
@@ -358,12 +389,12 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         // post-state (swapped to USDC)
         // verifies post-state balances of USDC and FRAX.
-        assertGt(IERC20(USDC).balanceOf(address(swapInterface)), 0 * USD);
-        emit Debug("Balance of Swap Interface USDC: ", IERC20(USDC).balanceOf(address(swapInterface)));
+        assertGt(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
+        emit Debug("Balance of Swap Interface USDC: ", IERC20(USDC).balanceOf(swapInterface.Treasury()));
 
     }
 
-    function test_swapInterface_swap_state_change_WETH() public {
+    function test_swapInterface_invest_state_change_WETH() public {
 
         // ----------
         // WETH swap()
@@ -376,7 +407,7 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         // pre-state (no USDC)
         // verifies pre-state balances of USDC and WETH.
-        assertEq(IERC20(USDC).balanceOf(address(swapInterface)), 0 * USD);
+        assertEq(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
 
         // state change -
         // calling invest() to execute the swap from WETH to USDC.
@@ -385,12 +416,12 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         // post-state (swapped to USDC)
         // verifies post-state balances of USDC and WETH.
-        assertGt(IERC20(USDC).balanceOf(address(swapInterface)), 0 * USD);
-        emit Debug("Balance of Swap Interface USDC: ", IERC20(USDC).balanceOf(address(swapInterface)));
+        assertGt(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
+        emit Debug("Balance of Swap Interface USDC: ", IERC20(USDC).balanceOf(swapInterface.Treasury()));
 
     }
 
-    function test_swapInterface_swap_state_change_WBTC() public {
+    function test_swapInterface_invest_state_change_WBTC() public {
 
         // ----------
         // WBTC swap()
@@ -403,7 +434,7 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         // pre-state (no USDC)
         // verifies pre-state balances of USDC and WBTC.
-        assertEq(IERC20(USDC).balanceOf(address(swapInterface)), 0 * USD);
+        assertEq(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
 
         // state change -
         // calling invest() to execute the swap from WBTC to USDC.
@@ -412,9 +443,8 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         // post-state (swapped to USDC)
         // verifies post-state balances of USDC and WBTC.
-        assertGt(IERC20(USDC).balanceOf(address(swapInterface)), 0 * USD);
-        emit Debug("Balance of Swap Interface USDC: ", IERC20(USDC).balanceOf(address(swapInterface)));
-
+        assertGt(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
+        emit Debug("Balance of Swap Interface USDC: ", IERC20(USDC).balanceOf(swapInterface.Treasury()));
     }
 
     function test_swapInterface_investETH_state_change() public {
@@ -428,7 +458,7 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         // pre-state (no USDC)
         // verifies pre-state balances of USDC and WETH.
-        assertEq(IERC20(USDC).balanceOf(address(swapInterface)), 0 * USD);
+        assertEq(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
 
         // state change -
         // calling invest_ETH() to execute swap chain from ETH to USDC.
@@ -436,8 +466,8 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         // post-state (swapped to USDC)
         // verifies post-state balances of USDC and WBTC.
-        assertGt(IERC20(USDC).balanceOf(address(swapInterface)), 0 * USD);
-        emit Debug("Balance of Swap Interface USDC: ", IERC20(USDC).balanceOf(address(swapInterface)));
+        assertGt(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
+        emit Debug("Balance of Swap Interface USDC: ", IERC20(USDC).balanceOf(swapInterface.Treasury()));
     }
     // ETH -> WETH -> USDT -> USDC
     // WETH -> USDT -> USDC

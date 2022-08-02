@@ -114,6 +114,11 @@ contract Actor {
         (ok,) = address(swapInterface).call{value: msg.value}(abi.encodeWithSignature(sig));
     }
 
+    function try_updateTreasury(address swapInterface, address _newAddress) external returns (bool ok) {
+        string memory sig = "updateTreasury(address)";
+        (ok,) = address(swapInterface).call(abi.encodeWithSignature(sig, _newAddress));
+    }
+
     // ~ treasury ~
         
     function try_addAuthorizedUser(address treasury, address wallet) external returns (bool ok) {
