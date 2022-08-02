@@ -3,7 +3,7 @@ pragma solidity ^0.8.6;
 
 import "./OpenZeppelin/Ownable.sol";
 import { SafeERC20 } from "./OpenZeppelin/SafeERC20.sol";
-import { IERC20, IUniswapV2Router01, IWETH } from "./interfaces/InterfacesAggregated.sol";
+import { IERC20, IWETH } from "./interfaces/InterfacesAggregated.sol";
 
 // Curve Docs: https://curve.readthedocs.io/
 
@@ -155,7 +155,16 @@ contract SwapInterface is Ownable{
     /// @param asset The address of the token being invested.
     /// @param amount The amount of the token being invested.
     function invest(address asset, uint256 amount) public isWhitelistedWallet() {
+        IERC20(asset).safeTransferFrom(msg.sender, address(this), amount);
         swap(asset, amount);
+    }
+
+    /// @notice Allows user to invest ETH into the REIT.
+    /// @dev ETH is not ERC20, needs to be wrapped using the WETH contract.
+    function investETH() public payable isWhitelistedWallet() {
+        // TODO: emit received ETH event
+        IWETH(WETH).deposit{value: msg.value}();
+        swap(WETH, msg.value);
     }
 
     /// @notice Calls the Curve API to swap incoming assets to USDC.

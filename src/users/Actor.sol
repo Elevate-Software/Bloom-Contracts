@@ -109,6 +109,11 @@ contract Actor {
         (ok,) = address(swapInterface).call(abi.encodeWithSignature(sig, _tokenAddress, _amount));
     }
 
+    function try_investETH(address swapInterface) external payable returns (bool ok) {
+        string memory sig = "investETH()";
+        (ok,) = address(swapInterface).call{value: msg.value}(abi.encodeWithSignature(sig));
+    }
+
     // ~ treasury ~
         
     function try_addAuthorizedUser(address treasury, address wallet) external returns (bool ok) {
