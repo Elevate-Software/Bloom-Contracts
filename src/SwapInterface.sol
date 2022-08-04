@@ -108,7 +108,17 @@ contract SwapInterface is Ownable{
     // Events
     // ------
 
-    // TODO: Add any necessary events.
+    event AuthorizedUserUpdated(address indexed user, bool isAuthorized);
+
+    event InvestmentReceived(uint256 amountInvestedUSDC);
+
+    event UpdatedStableCurrency(address tokenAddress);
+
+    event ContractStateUpdated(bool isEnabled);
+
+    event TreasuryAddressUpdated(address treasuryAddress);
+
+    event TokenWhitelistStateUpdated(address token, bool isAllowed);
 
     // ---------
     // Modifiers
@@ -116,13 +126,13 @@ contract SwapInterface is Ownable{
 
     /// @notice Only authorized users can call functions with this modifier.
     modifier isAuthorized() {
-        require(isAuthorizedUser[msg.sender] == true, "SwapInterface.sol::isAuthorized() User is not authorized.");
+        require(isAuthorizedUser[msg.sender] == true, "SwapInterface.sol::isAuthorized(), User is not authorized.");
         _;
     }
 
     /// @notice Only whitelisted users can call functions with this modifier.
     modifier isWhitelistedWallet() {
-        require(whitelistedWallet[msg.sender] == true, "SwapInterface.sol::isWhitelistedWallet() User is not authorized.");
+        require(whitelistedWallet[msg.sender] == true, "SwapInterface.sol::isWhitelistedWallet(), User is not authorized.");
         _;
     }
 
@@ -133,12 +143,14 @@ contract SwapInterface is Ownable{
     /// @notice Adds an authorized user.
     /// @param _address The address to add as authorized user.
     function addAuthorizedUser(address _address) external onlyOwner() {
+        emit AuthorizedUserUpdated(_address, true);
         isAuthorizedUser[_address] = true;
     }
 
     /// @notice Removes an authorized user.
     /// @param _address The address to remove as authorized user.
     function removeAuthorizedUser(address _address) external onlyOwner() {
+        emit AuthorizedUserUpdated(_address, false);
         isAuthorizedUser[_address] = false;
     }
 
@@ -158,25 +170,26 @@ contract SwapInterface is Ownable{
     /// @notice Allows user to invest tokens into the REIT.
     /// @param asset The address of the token being invested.
     /// @param amount The amount of the token being invested.
-    function invest(address asset, uint256 amount) public isWhitelistedWallet() {
+    function invest(address asset, uint256 amount) external isWhitelistedWallet() {
         IERC20(asset).safeTransferFrom(msg.sender, address(this), amount);
-        swap(asset, amount);
+        uint256 amountInvested = swap(asset, amount);
+        emit InvestmentReceived(amountInvested);
     }
 
     /// @notice Allows user to invest ETH into the REIT.
     /// @dev ETH is not ERC20, needs to be wrapped using the WETH contract.
-    function investETH() public payable isWhitelistedWallet() {
-        // TODO: emit received ETH event
+    function investETH() external payable isWhitelistedWallet() {
         IWETH(WETH).deposit{value: msg.value}();
-        swap(WETH, msg.value);
+        uint256 amountInvested = swap(WETH, msg.value);
+        emit InvestmentReceived(amountInvested);
     }
 
     /// @notice Calls the Curve API to swap incoming assets to USDC.
     // TODO: should we swap for a given amount, or just try to use the contract's currency balance?
-    function swap(address asset, uint256 amount) internal {
+    function swap(address asset, uint256 amount) internal returns (uint256 amountInvestedUSDC) {
         require(whitelistedToken[asset] == true, "swapInterface.sol::swap() Swapping is disabled for this token.");
 
-        uint256 min_dy = 1;    // TODO: Figure out what this should actually be if not 1.
+        uint256 min_dy = 1;    // NOTE: Unsure if this could cause any issues.
 
         // swap given asset to stable currency (USDC).
 
@@ -219,65 +232,50 @@ contract SwapInterface is Ownable{
         // USDC doesn't need to be swapped via curve.
 
         // transfer swapped asset to treasury.
-        IERC20(USDC).transfer(Treasury, IERC20(USDC).balanceOf(address(this)));
-
-        // Pools resources //
-        // All Pools: https://curve.fi/pools
-        // Understanding Pools: https://resources.curve.fi/lp/understanding-curve-pools
-        // Base & MetaPools: https://resources.curve.fi/lp/base-and-metapools
-
-        // Swapping resources //
-        // Tutorial (it's in Vyper, but should be almost identical in Solidity): https://www.youtube.com/watch?v=uB78gRsE5cI
-        // Pool Contract: https://github.com/curvefi/curve-contract/tree/master/contracts/pools
-
-        // DAI, USDC, USDT, FRAX, WETH, WBTC, TUSD
-        // needs to be or swap directly to USDC
-        // viable pools: 3Pool (DAI, USDT, USDC); fraxUSDC (FRAX, USDC); 
-        // missing pools: WETH, WBTC, TUSD ... tricrypto2(USDT, wBTC, WETH) but is non-pegged and doesn't have USDC.
-
-        // need a separate interface for each pool we're going to use.
-        // May have to cut out WETH, WBTC, AND TUSD.
-            // TUSD because there's no pool for it
-            // WETH AND WBTC because we would have to swap twice (into TUSD in tricrypto2 pool, then into USDC in 3pool).
-
-        // automatically send invested USDC to treasury.
+        uint256 amountUSDC = IERC20(USDC).balanceOf(address(this));
+        IERC20(USDC).transfer(Treasury, amountUSDC);
+        return amountUSDC;
     }
 
     /// @notice Changes the stable currency address.
     /// @param newAddress The new stable currency contact address.
     function changeStableCurrency(address newAddress) public onlyOwner() {
+        emit UpdatedStableCurrency(newAddress);
         stableCurrency = newAddress;
     }
 
     /// @notice Allows owner to disable smart contract operations.
     function disableContract() external onlyOwner() {
+        emit ContractStateUpdated(false);
         contractEnabled = false;
     }
 
     /// @notice Allows owner to enable contract if disabled.
     function enableContract() external onlyOwner() {
+        emit ContractStateUpdated(true);
         contractEnabled = true;
     }
 
     /// @notice Updates which tokens are accepted for investments.
     /// @param tokenAddress The contact address for the token we are updating.
-    /// @param allowed true to accept investments of this token, false to decline.
-    function updateTokenWhitelist(address tokenAddress, bool allowed) public onlyOwner() {
-        whitelistedToken[tokenAddress] = allowed;
+    /// @param isAllowed true to accept investments of this token, false to decline.
+    function updateTokenWhitelist(address tokenAddress, bool isAllowed) public onlyOwner() {
+        emit TokenWhitelistStateUpdated(tokenAddress, isAllowed);
+        whitelistedToken[tokenAddress] = isAllowed;
     }
 
     /// @notice Updates address of the Treasury contract.
     /// @param newAddress The new address of the treasury.
     function updateTreasury(address newAddress) public onlyOwner() {
+        emit TreasuryAddressUpdated(newAddress);
         Treasury = newAddress;
-        // emit event?
     }
 
     // ~ View Functions ~
 
     /// @notice Should return contract balance of stableCurrency.
     /// @return uint256 Amount of stableCurrency that is inside contract.
-    function balanceOfStableCurrency() public view returns (uint256) {
-
+    function balanceOfToken(address token) public view returns (uint256) {
+        return IERC20(token).balanceOf(address(this));
     }
 }
