@@ -3,7 +3,7 @@ pragma solidity ^0.8.6;
 
 import "./OpenZeppelin/Ownable.sol";
 import { SafeERC20 } from "./OpenZeppelin/SafeERC20.sol";
-import { IERC20, IWETH } from "./interfaces/InterfacesAggregated.sol";
+import { IERC20, IWETH, ITreasury } from "./interfaces/InterfacesAggregated.sol";
 
 // Curve Docs: https://curve.readthedocs.io/
 
@@ -51,6 +51,7 @@ contract SwapInterface is Ownable{
 
     address public stableCurrency;   /// @notice Used to store address of coin used to deposit/payout from Treasury.
     bool public contractEnabled;     /// @notice Bool for contract enabling / disabling investments.
+    bool public treasurySet;        /// @notice Please set treasury :(
 
     address public Treasury;           /// @notice Used to transfer USDC to treasury.
 
@@ -94,11 +95,9 @@ contract SwapInterface is Ownable{
     /// @param _admin Wallet address of owner account.
     constructor (
         address _stableCurrency,
-        address _treasury,
         address _admin
     ) {
         stableCurrency = _stableCurrency;
-        Treasury = _treasury;
 
         transferOwnership(_admin);
         isAuthorizedUser[owner()] = true;
@@ -171,23 +170,25 @@ contract SwapInterface is Ownable{
     /// @param asset The address of the token being invested.
     /// @param amount The amount of the token being invested.
     function invest(address asset, uint256 amount) external isWhitelistedWallet() {
+        require(contractEnabled = true, "swapInterface.sol::invest(), Contract not enabled.");
         IERC20(asset).safeTransferFrom(msg.sender, address(this), amount);
-        uint256 amountInvested = swap(asset, amount);
+        uint256 amountInvested = swap(asset, amount, msg.sender);
         emit InvestmentReceived(amountInvested);
     }
 
     /// @notice Allows user to invest ETH into the REIT.
     /// @dev ETH is not ERC20, needs to be wrapped using the WETH contract.
     function investETH() external payable isWhitelistedWallet() {
+        require(contractEnabled = true, "swapInterface.sol::investETH(), Contract not enabled.");
         IWETH(WETH).deposit{value: msg.value}();
-        uint256 amountInvested = swap(WETH, msg.value);
+        uint256 amountInvested = swap(WETH, msg.value, msg.sender);
         emit InvestmentReceived(amountInvested);
     }
 
     /// @notice Calls the Curve API to swap incoming assets to USDC.
     // TODO: should we swap for a given amount, or just try to use the contract's currency balance?
-    function swap(address asset, uint256 amount) internal returns (uint256 amountInvestedUSDC) {
-        require(whitelistedToken[asset] == true, "swapInterface.sol::swap() Swapping is disabled for this token.");
+    function swap(address asset, uint256 amount, address _address) internal returns (uint256 amountInvestedUSDC) {
+        require(whitelistedToken[asset] == true, "swapInterface.sol::swap(), Swapping is disabled for this token.");
 
         uint256 min_dy = 1;    // NOTE: Unsure if this could cause any issues.
 
@@ -234,6 +235,7 @@ contract SwapInterface is Ownable{
         // transfer swapped asset to treasury.
         uint256 amountUSDC = IERC20(USDC).balanceOf(address(this));
         IERC20(USDC).transfer(Treasury, amountUSDC);
+        ITreasury(Treasury).updateStableReceived(_address, amountUSDC, block.timestamp);
         return amountUSDC;
     }
 
@@ -252,6 +254,7 @@ contract SwapInterface is Ownable{
 
     /// @notice Allows owner to enable contract if disabled.
     function enableContract() external onlyOwner() {
+        require(treasurySet, "swapInterface.sol::invest(), Treasury not set.");
         emit ContractStateUpdated(true);
         contractEnabled = true;
     }
@@ -269,6 +272,7 @@ contract SwapInterface is Ownable{
     function updateTreasury(address newAddress) public onlyOwner() {
         emit TreasuryAddressUpdated(newAddress);
         Treasury = newAddress;
+        treasurySet = true;
     }
 
     // ~ View Functions ~

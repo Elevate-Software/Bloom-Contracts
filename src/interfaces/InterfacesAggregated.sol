@@ -65,3 +65,7 @@ interface IWETH {
     function balanceOf(address account) external view returns (uint256);
     function transfer(address to, uint value) external returns (bool);
 }
+
+interface ITreasury {
+    function updateStableReceived(address _wallet, uint _amount, uint _timeUnix) external;
+}
