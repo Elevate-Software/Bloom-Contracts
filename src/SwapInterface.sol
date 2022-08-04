@@ -3,7 +3,7 @@ pragma solidity ^0.8.6;
 
 import "./OpenZeppelin/Ownable.sol";
 import { SafeERC20 } from "./OpenZeppelin/SafeERC20.sol";
-import { IERC20, IWETH, ITreasury } from "./interfaces/InterfacesAggregated.sol";
+import { IERC20, IWETH, ITreasury, curve3PoolStableSwap, curveFraxUSDCStableSwap, curveTriCrypto2StableSwap } from "./interfaces/InterfacesAggregated.sol";
 
 // Curve Docs: https://curve.readthedocs.io/
 
@@ -21,21 +21,6 @@ import { IERC20, IWETH, ITreasury } from "./interfaces/InterfacesAggregated.sol"
 // ----------
 // Interfaces
 // ----------
-
-// DAI, USDC, USDT
-interface curve3PoolStableSwap {
-    function exchange(int128 i, int128 j, uint256 dx, uint256 min_dy) external;
-}
-
-// FRAX, USDT
-interface curveFraxUSDCStableSwap {
-    function exchange(int128 i, int128 j, uint256 dx, uint256 min_dy) external; //TODO: is this correct?
-}
-
-// USDT, WBTC, WETH
-interface curveTriCrypto2StableSwap {
-    function exchange(uint256 i, uint256 j, uint256 dx, uint256 min_dy) external; //TODO: is this correct?
-}
 
 
 /// other interfaces here :)
