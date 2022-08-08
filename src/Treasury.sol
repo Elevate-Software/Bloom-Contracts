@@ -88,6 +88,8 @@ contract Treasury is Ownable {
     //       https://www.tutorialspoint.com/solidity/solidity_events.htm.
 
     event StableCoinReceived(address indexed wallet, uint amount);
+
+    event StableCurrencyUpdated(address currentStable, address newStable);
     
     // ---------
     // Modifiers
@@ -117,18 +119,24 @@ contract Treasury is Ownable {
 
     }
 
-    /// TODO:   Add SwapInterface modifier.
     /// @notice Updates investment values when an investment is made through Dapp.
     /// @dev    Should only be called by SwapInterface.sol.
-    /// @param _wallet account making an investment.
-    /// @param _amount amount of stable coin received from account.
+    /// @param _wallet   account making an investment.
+    /// @param _amount   amount of stable coin received from account.
     /// @param _timeUnix time unix of when investment occured.
     function updateStableReceived(address _wallet, uint _amount, uint _timeUnix) public isSwapInterface{
+        uint newAmount = _amount;
+
+        if (IERC20(stableCurrency).decimals() != 6) {
+            uint decimalStable = IERC20(stableCurrency).decimals();
+            uint difference = decimalStable - 6;
+            newAmount = newAmount / 10 ** difference;
+        }
+
         emit StableCoinReceived(_wallet, _amount);
-        // TODO: Consider creating a constant decimal point precision (Edge case: If USDC changes to DAI which is 18 decimals, investor data will be scewed)
-        investorLibrary[_wallet].totalAmountInvested += _amount;
-        investorLibrary[_wallet].investmentLibrary.push(InvestmentReceipt(_amount, _timeUnix));
-        //mintBloom
+        investorLibrary[_wallet].totalAmountInvested += newAmount;
+        investorLibrary[_wallet].investmentLibrary.push(InvestmentReceipt(newAmount, _timeUnix));
+
         mintBloom(_wallet, _amount);
     }
 
@@ -215,9 +223,14 @@ contract Treasury is Ownable {
 
     }
 
-    /// @notice updates stablecurrency to _stablecurrency.
+    /// @notice Updates stablecurrency to _stablecurrency.
+    /// @dev    Decimal point precision of _stableCurrency cannot be less than 6.
     /// @param _stableCurrency stores stableCurrency.
     function updateStableCurrency(address _stableCurrency) public onlyOwner() {
+        require(stableCurrency != _stableCurrency, "Treasury.sol::updateStableCurrency() stableCurrency should not equal _stableCurrency.");
+        require(IERC20(_stableCurrency).decimals() >= 6, "Treasury.sol::updateStableCurrency() decimal precision of _stableCurrency needs to be >= 6.");
+
+        emit StableCurrencyUpdated(stableCurrency, _stableCurrency);
         stableCurrency = _stableCurrency;
     }
 
