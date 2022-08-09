@@ -203,4 +203,25 @@ contract TreasuryTest is DSTest, Utility {
         assertEq(IERC20(treasury.stableCurrency()).balanceOf(address(treasury)), 1000 * USD);
         assertEq(treasury.balanceOfStableCurrency(), 1000 * USD);
     }
+
+    // ~ safeWithdraw() Testing ~
+
+    function test_treasury_safeWithdraw_restrictions() public {
+        
+        // Add funds to contract balance of stableCurrency inside Treasury.sol.
+        mint("USDC", address(treasury), 1033 * USD);
+      
+      // "dev" should be able to call safeWithdraw().
+      assert(dev.try_safeWithdraw(address(treasury), USDC));
+
+      // "bob" should not be able to call safeWithdraw().
+      assert(!bob.try_safeWithdraw(address(treasury), USDC));
+
+      // "joe" should not be able to call safeWithdraw().
+      assert(!joe.try_safeWithdraw(address(treasury), USDC));
+
+      // "val" should not be able to call safeWithdraw().
+      assert(!val.try_safeWithdraw(address(treasury), USDC));
+
+    }
 }

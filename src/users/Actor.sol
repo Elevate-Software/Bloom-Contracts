@@ -121,4 +121,10 @@ contract Actor {
         (ok,) = address(treasury).call(abi.encodeWithSignature(sig, stable));
     }
 
+    function try_safeWithdraw(address treasury, address _token) external returns (bool ok) {
+        string memory sig = "safeWithdraw(address)";
+        (ok,) = address(treasury).call(abi.encodeWithSignature(sig, _token));
+    }
+
+
 }

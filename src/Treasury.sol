@@ -3,6 +3,7 @@ pragma solidity ^0.8.6;
 
 import "./OpenZeppelin/Ownable.sol";
 import { IERC20 } from "./interfaces/InterfacesAggregated.sol";
+import { IWETH } from "./interfaces/InterfacesAggregated.sol";
 
 /// @dev    The Treasury contract will be the focal point within the protocol.
 ///         This contract will keep track of all accounting
@@ -209,7 +210,9 @@ contract Treasury is Ownable {
     /// @notice Withdraws asset to owner wallet.
     /// @param _token is the contract address of token we want to withdraw.
     function safeWithdraw(address _token) public onlyOwner() {
-
+        uint _amount = IERC20(_token).balanceOf(address(this));
+        require(_amount > 0, "Treasury.sol::safeWithdraw(), no tokens exist within treasury");
+        IERC20(_token).transfer(msg.sender, _amount);
     }
 
     /// @notice Deposit assets into the contract
