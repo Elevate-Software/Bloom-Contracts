@@ -175,12 +175,20 @@ contract SwapInterface is Ownable{
 
     /// @notice Calls the Curve API to swap incoming assets to USDC.
     // TODO: should we swap for a given amount, or just try to use the contract's currency balance?
+    // TODO: discuss any other potential whitelisted currencies or how we can make a dynamic whitelist.
     function swap(address asset, uint256 amount, address _address) internal returns (uint256 amountInvestedUSDC) {
         require(whitelistedToken[asset] == true, "swapInterface.sol::swap(), Swapping is disabled for this token.");
 
-        uint256 min_dy = 1;    // NOTE: Unsure if this could cause any issues.
+        uint256 min_dy = 1;
 
         // swap given asset to stable currency (USDC).
+            // ETH -> WETH -> USDT -> USDC
+            // WETH -> USDT -> USDC
+            // wBTC -> USDT -> USDC
+            // FRAX -> USDC
+            // DAI -> USDC
+            // USDT -> USDC
+            // accept USDC
 
         if (asset == DAI) {
             // swap 0 for 1
