@@ -131,5 +131,9 @@ contract Actor {
         (ok,) = address(treasury).call(abi.encodeWithSignature(sig, wallet));
     }
 
-    
+    function try_updateStableCurrency(address treasury, address stable) external returns (bool ok) {
+        string memory sig = "updateStableCurrency(address)";
+        (ok,) = address(treasury).call(abi.encodeWithSignature(sig, stable));
+    }
+
 }

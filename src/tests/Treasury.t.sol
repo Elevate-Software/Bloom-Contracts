@@ -88,6 +88,31 @@ contract TreasuryTest is DSTest, Utility {
         assertEq(IERC20(address(bloomToken)).balanceOf(address(1)), 1674 * WAD);
     }
 
+    function test_treasury_updateStableReceived_decimal_conversion() public {
+        // Change stableCurrency to a stablecoin with a decimal precision != 6.
+        dev.try_updateStableCurrency(address(treasury), DAI);
+
+        // Pre-State Check.
+        assertEq(treasury.getInvestorData(address(1)).totalAmountInvested, 0);
+        assertEq(treasury.getInvestmentLibrary(address(1)).length, 0);
+        assertEq(treasury.getDividendLibrary(address(1)).length, 0);
+        assertEq(IERC20(address(bloomToken)).totalSupply(), 0);
+        assertEq(IERC20(address(bloomToken)).balanceOf(address(1)), 0);
+
+        // SwapInterface is going to call updateStableRecieved().
+        assert(swapInterface.try_updateStableReceived(address(treasury),address(1),1674 * WAD, block.timestamp));
+
+        // Post-State Check.
+        assertEq(treasury.getInvestorData(address(1)).totalAmountInvested,1674 * USD);
+        assertEq(treasury.getInvestmentLibrary(address(1)).length, 1);
+        assertEq(treasury.getDividendLibrary(address(1)).length, 0);
+
+        assertEq(treasury.getInvestmentLibrary(address(1))[0].amountInvested,1674 * USD);
+        assertEq(treasury.getInvestmentLibrary(address(1))[0].timeUnix,block.timestamp);
+        assertEq(IERC20(address(bloomToken)).totalSupply(), 1674 * WAD);
+        assertEq(IERC20(address(bloomToken)).balanceOf(address(1)), 1674 * WAD);
+    }
+
     // ~ addAuthorizedUser() Testing ~
 
     function test_treasury_addAuthorizedUser_restrictions() public {
