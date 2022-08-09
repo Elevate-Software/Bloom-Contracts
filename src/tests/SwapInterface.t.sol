@@ -7,19 +7,46 @@ import "./Utility.sol";
 
 import "../SwapInterface.sol";
 
+import "../Treasury.sol";
+
+import "../BloomToken.sol";
+
+import { IUniswapV2Router01, IWETH } from "../interfaces/InterfacesAggregated.sol";
+
 contract SwapInterfaceTest is DSTest, Utility {
     SwapInterface swapInterface;
+    Treasury treasury;
+    BloomToken bloomToken;
 
     function setUp() public {
         createActors();
+        setUpTokens();
 
         swapInterface = new SwapInterface(
             USDC,
             address(dev)
         );
 
+        bloomToken = new BloomToken(
+            0, // NOTE: DO NOT ADD 18 ZEROS, when deployed set to 0
+            18,
+            "BloomToken",
+            "BLOOM",
+            address(dev)
+        );
+
+        treasury = new Treasury(
+            USDC,
+            address(swapInterface),
+            address(bloomToken),
+            address(dev)
+        );
+
         dev.try_addWalletToAuthorizedUsers(address(swapInterface), address(val));
         dev.try_addWalletToWhitelist(address(swapInterface), address(bob));
+        dev.try_updateTreasury(address(swapInterface), address(treasury));
+        dev.try_enableContract(address(swapInterface));
+        dev.try_setTreasury(address(bloomToken), address(treasury));
     }
 
     function test_swapInterface_init_state() public {
@@ -181,6 +208,7 @@ contract SwapInterfaceTest is DSTest, Utility {
 
     // enable contract state changes.
     function test_swapInterface_enableContract_state_changes() public {
+        dev.try_disableContract(address(swapInterface));
         // pre-state
         assertTrue(!swapInterface.contractEnabled());
 
@@ -274,4 +302,288 @@ contract SwapInterfaceTest is DSTest, Utility {
         // "dev" should be able to call updateTokenWhitelist().
         assert(dev.try_updateTokenWhitelist(address(swapInterface), DAI, true));
     }
+
+    // ~ updateTreasury() testing ~
+
+    function test_swapInterface_updateTreasury_state_change() public {
+        // pre-state
+        // treasury is the expected address.
+        assertEq(swapInterface.Treasury(), address(treasury));
+
+        // state change
+        // owner changes the address to a new one.
+        assert(dev.try_updateTreasury(address(swapInterface), address(2)));
+
+        // post-state
+        // treasury is the new address.
+        assertEq(swapInterface.Treasury(), address(2));
+    }
+
+    function test_swapInterface_updateTreasury_restrictions() public {
+        // "joe" should not be able to call updateTreasury().
+        assert(!joe.try_updateTreasury(address(swapInterface), address(2)));
+
+        // "bob" should not be able to call updateTreasury().
+        assert(!bob.try_updateTreasury(address(swapInterface), address(2)));
+
+        // "val" should not be able to call updateTreasury().
+        assert(!val.try_updateTreasury(address(swapInterface), address(2)));
+
+        // "dev" should be able to call updateTreasury().
+        assert(dev.try_updateTreasury(address(swapInterface), address(2)));
+    }
+
+    // ~ Invest/Swap Testing ~
+
+    // NOTE: Must call swapInterface::swap() through try_invest since its an internal function.
+    function test_swapInterface_invest_state_change_DAI() public {
+
+        // ----------
+        // DAI swap()
+        // ----------
+        uint256 swapAmount = 1000 ether;
+
+        // Allow DAI to be swapped setup.
+        dev.try_updateTokenWhitelist(address(swapInterface), DAI, true);
+        mint("DAI", address(bob), swapAmount);
+
+        // pre-state (no USDC)
+        // verifies pre-state balances of USDC and DAI.
+        assertEq(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
+        assertEq(IERC20(DAI).balanceOf(address(bob)), swapAmount);
+
+        assertEq(treasury.getInvestorData(address(bob)).totalAmountInvested, 0);
+        assertEq(treasury.getInvestmentLibrary(address(bob)).length, 0);
+        assertEq(treasury.getDividendLibrary(address(bob)).length, 0);
+        assertEq(IERC20(address(bloomToken)).totalSupply(), 0);
+        assertEq(IERC20(address(bloomToken)).balanceOf(address(bob)), 0);
+
+        // state change -
+        // calling invest() to execute the swap from DAI to USDC.
+        assert(bob.try_approveToken(DAI, address(swapInterface), swapAmount));
+        assert(bob.try_invest(address(swapInterface), DAI, swapAmount));
+
+        // post-state (swapped to USDC)
+        // verifies post-state balance of USDC.
+
+        uint256 amountReceived = IERC20(USDC).balanceOf(swapInterface.Treasury());
+
+        assertEq(treasury.getInvestorData(address(bob)).totalAmountInvested, amountReceived);
+        assertEq(treasury.getInvestmentLibrary(address(bob)).length, 1);
+        assertEq(treasury.getDividendLibrary(address(bob)).length, 0);
+
+        assertEq(treasury.getInvestmentLibrary(address(bob))[0].amountInvested, amountReceived);
+        assertEq(treasury.getInvestmentLibrary(address(bob))[0].timeUnix, block.timestamp);
+
+        assertEq(IERC20(address(bloomToken)).totalSupply(), amountReceived * 10**12);
+        assertEq(IERC20(address(bloomToken)).balanceOf(address(bob)), amountReceived * 10**12);
+    }
+
+    function test_swapInterface_invest_state_change_USDT() public {
+
+        // ----------
+        // USDT swap()
+        // ----------
+        uint256 swapAmount = 1000 * USD;
+
+        // Allow USDT to be swapped setup.
+        dev.try_updateTokenWhitelist(address(swapInterface), USDT, true);
+        mint("USDT", address(bob), swapAmount);
+
+        // pre-state (no USDC)
+        // verifies pre-state balances of USDC and USDT.
+        assertEq(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
+        assertEq(IERC20(USDT).balanceOf(address(bob)), swapAmount);
+
+        assertEq(treasury.getInvestorData(address(bob)).totalAmountInvested, 0);
+        assertEq(treasury.getInvestmentLibrary(address(bob)).length, 0);
+        assertEq(treasury.getDividendLibrary(address(bob)).length, 0);
+        assertEq(IERC20(address(bloomToken)).totalSupply(), 0);
+        assertEq(IERC20(address(bloomToken)).balanceOf(address(bob)), 0);
+
+        // state change -
+        // calling invest() to execute the swap from USDT to USDC.
+        assert(bob.try_approveToken(USDT, address(swapInterface), swapAmount));
+        assert(bob.try_invest(address(swapInterface), USDT, swapAmount));
+
+        // post-state (swapped to USDC)
+        // verifies post-state balances of USDC and USDT.
+        uint256 amountReceived = IERC20(USDC).balanceOf(swapInterface.Treasury());
+
+        assertEq(treasury.getInvestorData(address(bob)).totalAmountInvested, amountReceived);
+        assertEq(treasury.getInvestmentLibrary(address(bob)).length, 1);
+        assertEq(treasury.getDividendLibrary(address(bob)).length, 0);
+
+        assertEq(treasury.getInvestmentLibrary(address(bob))[0].amountInvested, amountReceived);
+        assertEq(treasury.getInvestmentLibrary(address(bob))[0].timeUnix, block.timestamp);
+
+        assertEq(IERC20(address(bloomToken)).totalSupply(), amountReceived * 10**12);
+        assertEq(IERC20(address(bloomToken)).balanceOf(address(bob)), amountReceived * 10**12);
+    }
+
+    function test_swapInterface_invest_state_change_FRAX() public {
+
+        // ----------
+        // FRAX swap()
+        // ----------
+        uint256 swapAmount = 1000 ether;
+
+        // Allow FRAX to be swapped setup.
+        dev.try_updateTokenWhitelist(address(swapInterface), FRAX, true);
+        mint("FRAX", address(bob), swapAmount);
+
+        // pre-state (no USDC)
+        // verifies pre-state balances of USDC and FRAX.
+        assertEq(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
+        assertEq(IERC20(FRAX).balanceOf(address(bob)), swapAmount);
+
+        assertEq(treasury.getInvestorData(address(bob)).totalAmountInvested, 0);
+        assertEq(treasury.getInvestmentLibrary(address(bob)).length, 0);
+        assertEq(treasury.getDividendLibrary(address(bob)).length, 0);
+        assertEq(IERC20(address(bloomToken)).totalSupply(), 0);
+        assertEq(IERC20(address(bloomToken)).balanceOf(address(bob)), 0);
+
+        // state change -
+        // calling invest() to execute the swap from FRAX to USDC.
+        assert(bob.try_approveToken(FRAX, address(swapInterface), swapAmount));
+        assert(bob.try_invest(address(swapInterface), FRAX, swapAmount));
+
+        // post-state (swapped to USDC)
+        // verifies post-state balances of USDC and FRAX.
+        uint256 amountReceived = IERC20(USDC).balanceOf(swapInterface.Treasury());
+
+        assertEq(treasury.getInvestorData(address(bob)).totalAmountInvested, amountReceived);
+        assertEq(treasury.getInvestmentLibrary(address(bob)).length, 1);
+        assertEq(treasury.getDividendLibrary(address(bob)).length, 0);
+
+        assertEq(treasury.getInvestmentLibrary(address(bob))[0].amountInvested, amountReceived);
+        assertEq(treasury.getInvestmentLibrary(address(bob))[0].timeUnix, block.timestamp);
+
+        assertEq(IERC20(address(bloomToken)).totalSupply(), amountReceived * 10**12);
+        assertEq(IERC20(address(bloomToken)).balanceOf(address(bob)), amountReceived * 10**12);
+    }
+
+    function test_swapInterface_invest_state_change_WETH() public {
+
+        // ----------
+        // WETH swap()
+        // ----------
+        uint256 swapAmount = 10 ether;
+
+        // Allow WETH to be swapped setup.
+        dev.try_updateTokenWhitelist(address(swapInterface), WETH, true);
+        mint("WETH", address(bob), swapAmount);
+
+        // pre-state (no USDC)
+        // verifies pre-state balances of USDC and WETH.
+        assertEq(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
+        assertEq(IERC20(WETH).balanceOf(address(bob)), swapAmount);
+
+        assertEq(treasury.getInvestorData(address(bob)).totalAmountInvested, 0);
+        assertEq(treasury.getInvestmentLibrary(address(bob)).length, 0);
+        assertEq(treasury.getDividendLibrary(address(bob)).length, 0);
+        assertEq(IERC20(address(bloomToken)).totalSupply(), 0);
+        assertEq(IERC20(address(bloomToken)).balanceOf(address(bob)), 0);
+
+        // state change -
+        // calling invest() to execute the swap from WETH to USDC.
+        assert(bob.try_approveToken(WETH, address(swapInterface), swapAmount));
+        assert(bob.try_invest(address(swapInterface), WETH, swapAmount));
+
+        // post-state (swapped to USDC)
+        // verifies post-state balances of USDC and WETH.
+        uint256 amountReceived = IERC20(USDC).balanceOf(swapInterface.Treasury());
+
+        assertEq(treasury.getInvestorData(address(bob)).totalAmountInvested, amountReceived);
+        assertEq(treasury.getInvestmentLibrary(address(bob)).length, 1);
+        assertEq(treasury.getDividendLibrary(address(bob)).length, 0);
+
+        assertEq(treasury.getInvestmentLibrary(address(bob))[0].amountInvested, amountReceived);
+        assertEq(treasury.getInvestmentLibrary(address(bob))[0].timeUnix, block.timestamp);
+
+        assertEq(IERC20(address(bloomToken)).totalSupply(), amountReceived * 10**12);
+        assertEq(IERC20(address(bloomToken)).balanceOf(address(bob)), amountReceived * 10**12);
+
+    }
+
+    function test_swapInterface_invest_state_change_WBTC() public {
+
+        // ----------
+        // WBTC swap()
+        // ----------
+        uint256 swapAmount = 10 * BTC;
+
+        // Allow WBTC to be swapped setup.
+        dev.try_updateTokenWhitelist(address(swapInterface), WBTC, true);
+        mint("WBTC", address(bob), swapAmount);
+
+        // pre-state (no USDC)
+        // verifies pre-state balances of USDC and WBTC.
+        assertEq(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
+        assertEq(IERC20(WBTC).balanceOf(address(bob)), swapAmount);
+
+        assertEq(treasury.getInvestorData(address(bob)).totalAmountInvested, 0);
+        assertEq(treasury.getInvestmentLibrary(address(bob)).length, 0);
+        assertEq(treasury.getDividendLibrary(address(bob)).length, 0);
+        assertEq(IERC20(address(bloomToken)).totalSupply(), 0);
+        assertEq(IERC20(address(bloomToken)).balanceOf(address(bob)), 0);
+
+        // state change -
+        // calling invest() to execute the swap from WBTC to USDC.
+        assert(bob.try_approveToken(WBTC, address(swapInterface), swapAmount));
+        assert(bob.try_invest(address(swapInterface), WBTC, swapAmount));
+
+        // post-state (swapped to USDC)
+        // verifies post-state balances of USDC and WBTC.
+        uint256 amountReceived = IERC20(USDC).balanceOf(swapInterface.Treasury());
+
+        assertEq(treasury.getInvestorData(address(bob)).totalAmountInvested, amountReceived);
+        assertEq(treasury.getInvestmentLibrary(address(bob)).length, 1);
+        assertEq(treasury.getDividendLibrary(address(bob)).length, 0);
+
+        assertEq(treasury.getInvestmentLibrary(address(bob))[0].amountInvested, amountReceived);
+        assertEq(treasury.getInvestmentLibrary(address(bob))[0].timeUnix, block.timestamp);
+
+        assertEq(IERC20(address(bloomToken)).totalSupply(), amountReceived * 10**12);
+        assertEq(IERC20(address(bloomToken)).balanceOf(address(bob)), amountReceived * 10**12);
+    }
+
+    function test_swapInterface_investETH_state_change() public {
+        
+        // ----------
+        // WBTC swap()
+        // ----------
+
+        // Allow WETH to be swapped setup.
+        dev.try_updateTokenWhitelist(address(swapInterface), WETH, true);
+
+        // pre-state (no USDC)
+        // verifies pre-state balances of USDC and WETH.
+        assertEq(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
+
+        assertEq(treasury.getInvestorData(address(bob)).totalAmountInvested, 0);
+        assertEq(treasury.getInvestmentLibrary(address(bob)).length, 0);
+        assertEq(treasury.getDividendLibrary(address(bob)).length, 0);
+        assertEq(IERC20(address(bloomToken)).totalSupply(), 0);
+        assertEq(IERC20(address(bloomToken)).balanceOf(address(bob)), 0);
+
+        // state change -
+        // calling invest_ETH() to execute swap chain from ETH to USDC.
+        assert(bob.try_investETH{value: 10 ether}(address(swapInterface)));
+
+        // post-state (swapped to USDC)
+        // verifies post-state balances of USDC and WBTC.
+        uint256 amountReceived = IERC20(USDC).balanceOf(swapInterface.Treasury());
+
+        assertEq(treasury.getInvestorData(address(bob)).totalAmountInvested, amountReceived);
+        assertEq(treasury.getInvestmentLibrary(address(bob)).length, 1);
+        assertEq(treasury.getDividendLibrary(address(bob)).length, 0);
+
+        assertEq(treasury.getInvestmentLibrary(address(bob))[0].amountInvested, amountReceived);
+        assertEq(treasury.getInvestmentLibrary(address(bob))[0].timeUnix, block.timestamp);
+
+        assertEq(IERC20(address(bloomToken)).totalSupply(), amountReceived * 10**12);
+        assertEq(IERC20(address(bloomToken)).balanceOf(address(bob)), amountReceived * 10**12);
+    }
+
 }
