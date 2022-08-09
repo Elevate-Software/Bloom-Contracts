@@ -16,6 +16,7 @@ contract TreasuryTest is DSTest, Utility {
 
     function setUp() public {
         createActors();
+        setUpTokens();
 
         bloomToken = new BloomToken(
             0, // NOTE: DO NOT ADD 18 ZEROS, when deployed set to 0
@@ -185,5 +186,21 @@ contract TreasuryTest is DSTest, Utility {
         assert(!treasury.getAuthorizedUser(address(joe)));
     }
 
-   
+    // ~ balanceOfStableCurrency() Testing ~
+
+    function test_treasury_balanceOfStableCurrency_state_changes() public {
+        // Pre-State Check.
+        // Assert the balance of stableCurrency inside of the treasury is equal to 0.
+        assertEq(IERC20(treasury.stableCurrency()).balanceOf(address(treasury)), 0);
+        assertEq(treasury.balanceOfStableCurrency(), 0);
+
+        // State-Change.
+        // Add funds to contract balance of stableCurrency inside Treasury.sol.
+        mint("USDC", address(treasury), 1000 * USD);
+
+        // Post-State Check.
+        // Assert the balance of stableCurrency inside of the treasury is equal to 1000.
+        assertEq(IERC20(treasury.stableCurrency()).balanceOf(address(treasury)), 1000 * USD);
+        assertEq(treasury.balanceOfStableCurrency(), 1000 * USD);
+    }
 }

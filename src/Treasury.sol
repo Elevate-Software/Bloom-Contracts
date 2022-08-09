@@ -259,7 +259,7 @@ contract Treasury is Ownable {
     /// @notice Should return contract balance of stableCurrency.
     /// @return uint Amount of stableCurrency that is inside contract.
     function balanceOfStableCurrency() public view returns (uint) {
-
+        return IERC20(stableCurrency).balanceOf(address(this));
     }
 
     /// @notice used to get the InvestorData of a specific wallet.
