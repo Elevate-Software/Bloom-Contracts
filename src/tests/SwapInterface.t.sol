@@ -350,6 +350,7 @@ contract SwapInterfaceTest is DSTest, Utility {
         // pre-state (no USDC)
         // verifies pre-state balances of USDC and DAI.
         assertEq(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
+        assertEq(IERC20(DAI).balanceOf(address(bob)), swapAmount);
 
         assertEq(treasury.getInvestorData(address(bob)).totalAmountInvested, 0);
         assertEq(treasury.getInvestmentLibrary(address(bob)).length, 0);
@@ -392,6 +393,7 @@ contract SwapInterfaceTest is DSTest, Utility {
         // pre-state (no USDC)
         // verifies pre-state balances of USDC and USDT.
         assertEq(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
+        assertEq(IERC20(USDT).balanceOf(address(bob)), swapAmount);
 
         assertEq(treasury.getInvestorData(address(bob)).totalAmountInvested, 0);
         assertEq(treasury.getInvestmentLibrary(address(bob)).length, 0);
@@ -406,19 +408,17 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         // post-state (swapped to USDC)
         // verifies post-state balances of USDC and USDT.
-        assertGt(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
+        uint256 amountReceived = IERC20(USDC).balanceOf(swapInterface.Treasury());
 
-        assertGt(treasury.getInvestorData(address(bob)).totalAmountInvested, 0 * USD);
+        assertEq(treasury.getInvestorData(address(bob)).totalAmountInvested, amountReceived);
         assertEq(treasury.getInvestmentLibrary(address(bob)).length, 1);
         assertEq(treasury.getDividendLibrary(address(bob)).length, 0);
 
-        assertGt(treasury.getInvestmentLibrary(address(bob))[0].amountInvested, 0 * USD);
-        assertEq(treasury.getInvestmentLibrary(address(bob))[0].timeUnix,block.timestamp);
-        assertGt(IERC20(address(bloomToken)).totalSupply(), 0 * WAD);
-        assertGt(IERC20(address(bloomToken)).balanceOf(address(bob)), 0 * WAD);
+        assertEq(treasury.getInvestmentLibrary(address(bob))[0].amountInvested, amountReceived);
+        assertEq(treasury.getInvestmentLibrary(address(bob))[0].timeUnix, block.timestamp);
 
-        emit Debug("Balance of Swap Interface USDC: ", IERC20(USDC).balanceOf(swapInterface.Treasury()));
-
+        assertEq(IERC20(address(bloomToken)).totalSupply(), amountReceived * 10**12);
+        assertEq(IERC20(address(bloomToken)).balanceOf(address(bob)), amountReceived * 10**12);
     }
 
     function test_swapInterface_invest_state_change_FRAX() public {
@@ -435,6 +435,7 @@ contract SwapInterfaceTest is DSTest, Utility {
         // pre-state (no USDC)
         // verifies pre-state balances of USDC and FRAX.
         assertEq(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
+        assertEq(IERC20(FRAX).balanceOf(address(bob)), swapAmount);
 
         assertEq(treasury.getInvestorData(address(bob)).totalAmountInvested, 0);
         assertEq(treasury.getInvestmentLibrary(address(bob)).length, 0);
@@ -449,19 +450,17 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         // post-state (swapped to USDC)
         // verifies post-state balances of USDC and FRAX.
-        assertGt(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
+        uint256 amountReceived = IERC20(USDC).balanceOf(swapInterface.Treasury());
 
-        assertGt(treasury.getInvestorData(address(bob)).totalAmountInvested, 0 * USD);
+        assertEq(treasury.getInvestorData(address(bob)).totalAmountInvested, amountReceived);
         assertEq(treasury.getInvestmentLibrary(address(bob)).length, 1);
         assertEq(treasury.getDividendLibrary(address(bob)).length, 0);
 
-        assertGt(treasury.getInvestmentLibrary(address(bob))[0].amountInvested, 0 * USD);
-        assertEq(treasury.getInvestmentLibrary(address(bob))[0].timeUnix,block.timestamp);
-        assertGt(IERC20(address(bloomToken)).totalSupply(), 0 * WAD);
-        assertGt(IERC20(address(bloomToken)).balanceOf(address(bob)), 0 * WAD);
+        assertEq(treasury.getInvestmentLibrary(address(bob))[0].amountInvested, amountReceived);
+        assertEq(treasury.getInvestmentLibrary(address(bob))[0].timeUnix, block.timestamp);
 
-        emit Debug("Balance of Swap Interface USDC: ", IERC20(USDC).balanceOf(swapInterface.Treasury()));
-
+        assertEq(IERC20(address(bloomToken)).totalSupply(), amountReceived * 10**12);
+        assertEq(IERC20(address(bloomToken)).balanceOf(address(bob)), amountReceived * 10**12);
     }
 
     function test_swapInterface_invest_state_change_WETH() public {
@@ -478,6 +477,7 @@ contract SwapInterfaceTest is DSTest, Utility {
         // pre-state (no USDC)
         // verifies pre-state balances of USDC and WETH.
         assertEq(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
+        assertEq(IERC20(WETH).balanceOf(address(bob)), swapAmount);
 
         assertEq(treasury.getInvestorData(address(bob)).totalAmountInvested, 0);
         assertEq(treasury.getInvestmentLibrary(address(bob)).length, 0);
@@ -492,18 +492,17 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         // post-state (swapped to USDC)
         // verifies post-state balances of USDC and WETH.
-        assertGt(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
+        uint256 amountReceived = IERC20(USDC).balanceOf(swapInterface.Treasury());
 
-        assertGt(treasury.getInvestorData(address(bob)).totalAmountInvested, 0 * USD);
+        assertEq(treasury.getInvestorData(address(bob)).totalAmountInvested, amountReceived);
         assertEq(treasury.getInvestmentLibrary(address(bob)).length, 1);
         assertEq(treasury.getDividendLibrary(address(bob)).length, 0);
 
-        assertGt(treasury.getInvestmentLibrary(address(bob))[0].amountInvested, 0 * USD);
-        assertEq(treasury.getInvestmentLibrary(address(bob))[0].timeUnix,block.timestamp);
-        assertGt(IERC20(address(bloomToken)).totalSupply(), 0 * WAD);
-        assertGt(IERC20(address(bloomToken)).balanceOf(address(bob)), 0 * WAD);
+        assertEq(treasury.getInvestmentLibrary(address(bob))[0].amountInvested, amountReceived);
+        assertEq(treasury.getInvestmentLibrary(address(bob))[0].timeUnix, block.timestamp);
 
-        emit Debug("Balance of Swap Interface USDC: ", IERC20(USDC).balanceOf(swapInterface.Treasury()));
+        assertEq(IERC20(address(bloomToken)).totalSupply(), amountReceived * 10**12);
+        assertEq(IERC20(address(bloomToken)).balanceOf(address(bob)), amountReceived * 10**12);
 
     }
 
@@ -521,6 +520,7 @@ contract SwapInterfaceTest is DSTest, Utility {
         // pre-state (no USDC)
         // verifies pre-state balances of USDC and WBTC.
         assertEq(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
+        assertEq(IERC20(WBTC).balanceOf(address(bob)), swapAmount);
 
         assertEq(treasury.getInvestorData(address(bob)).totalAmountInvested, 0);
         assertEq(treasury.getInvestmentLibrary(address(bob)).length, 0);
@@ -535,18 +535,17 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         // post-state (swapped to USDC)
         // verifies post-state balances of USDC and WBTC.
-        assertGt(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
+        uint256 amountReceived = IERC20(USDC).balanceOf(swapInterface.Treasury());
 
-        assertGt(treasury.getInvestorData(address(bob)).totalAmountInvested, 0 * USD);
+        assertEq(treasury.getInvestorData(address(bob)).totalAmountInvested, amountReceived);
         assertEq(treasury.getInvestmentLibrary(address(bob)).length, 1);
         assertEq(treasury.getDividendLibrary(address(bob)).length, 0);
 
-        assertGt(treasury.getInvestmentLibrary(address(bob))[0].amountInvested, 0 * USD);
-        assertEq(treasury.getInvestmentLibrary(address(bob))[0].timeUnix,block.timestamp);
-        assertGt(IERC20(address(bloomToken)).totalSupply(), 0 * WAD);
-        assertGt(IERC20(address(bloomToken)).balanceOf(address(bob)), 0 * WAD);
+        assertEq(treasury.getInvestmentLibrary(address(bob))[0].amountInvested, amountReceived);
+        assertEq(treasury.getInvestmentLibrary(address(bob))[0].timeUnix, block.timestamp);
 
-        emit Debug("Balance of Swap Interface USDC: ", IERC20(USDC).balanceOf(swapInterface.Treasury()));
+        assertEq(IERC20(address(bloomToken)).totalSupply(), amountReceived * 10**12);
+        assertEq(IERC20(address(bloomToken)).balanceOf(address(bob)), amountReceived * 10**12);
     }
 
     function test_swapInterface_investETH_state_change() public {
@@ -574,18 +573,17 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         // post-state (swapped to USDC)
         // verifies post-state balances of USDC and WBTC.
-        assertGt(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
+        uint256 amountReceived = IERC20(USDC).balanceOf(swapInterface.Treasury());
 
-        assertGt(treasury.getInvestorData(address(bob)).totalAmountInvested, 0 * USD);
+        assertEq(treasury.getInvestorData(address(bob)).totalAmountInvested, amountReceived);
         assertEq(treasury.getInvestmentLibrary(address(bob)).length, 1);
         assertEq(treasury.getDividendLibrary(address(bob)).length, 0);
 
-        assertGt(treasury.getInvestmentLibrary(address(bob))[0].amountInvested, 0 * USD);
-        assertEq(treasury.getInvestmentLibrary(address(bob))[0].timeUnix,block.timestamp);
-        assertGt(IERC20(address(bloomToken)).totalSupply(), 0 * WAD);
-        assertGt(IERC20(address(bloomToken)).balanceOf(address(bob)), 0 * WAD);
-        
-        emit Debug("Balance of Swap Interface USDC: ", IERC20(USDC).balanceOf(swapInterface.Treasury()));
+        assertEq(treasury.getInvestmentLibrary(address(bob))[0].amountInvested, amountReceived);
+        assertEq(treasury.getInvestmentLibrary(address(bob))[0].timeUnix, block.timestamp);
+
+        assertEq(IERC20(address(bloomToken)).totalSupply(), amountReceived * 10**12);
+        assertEq(IERC20(address(bloomToken)).balanceOf(address(bob)), amountReceived * 10**12);
     }
 
 }

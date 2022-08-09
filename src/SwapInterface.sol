@@ -19,14 +19,6 @@ import { IERC20 } from "./interfaces/InterfacesAggregated.sol";
 ///          - Will we ever remove data from the mappings: ie, how does a project end?
 
 
-
-// ----------
-// Interfaces
-// ----------
-
-
-/// other interfaces here :)
-
 contract SwapInterface is Ownable{
 
     // ---------------
@@ -158,18 +150,22 @@ contract SwapInterface is Ownable{
     /// @param asset The address of the token being invested.
     /// @param amount The amount of the token being invested.
     function invest(address asset, uint256 amount) external isWhitelistedWallet() {
-        require(contractEnabled = true, "swapInterface.sol::invest(), Contract not enabled.");
+        require(contractEnabled, "swapInterface.sol::invest(), Contract not enabled.");
+
         IERC20(asset).safeTransferFrom(msg.sender, address(this), amount);
         uint256 amountInvested = swap(asset, amount, msg.sender);
+
         emit InvestmentReceived(amountInvested);
     }
 
     /// @notice Allows user to invest ETH into the REIT.
     /// @dev ETH is not ERC20, needs to be wrapped using the WETH contract.
     function investETH() external payable isWhitelistedWallet() {
-        require(contractEnabled = true, "swapInterface.sol::investETH(), Contract not enabled.");
+        require(contractEnabled, "swapInterface.sol::investETH(), Contract not enabled.");
+
         IWETH(WETH).deposit{value: msg.value}();
         uint256 amountInvested = swap(WETH, msg.value, msg.sender);
+
         emit InvestmentReceived(amountInvested);
     }
 
