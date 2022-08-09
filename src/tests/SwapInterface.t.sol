@@ -208,6 +208,7 @@ contract SwapInterfaceTest is DSTest, Utility {
 
     // enable contract state changes.
     function test_swapInterface_enableContract_state_changes() public {
+        dev.try_disableContract(address(swapInterface));
         // pre-state
         assertTrue(!swapInterface.contractEnabled());
 
@@ -307,7 +308,7 @@ contract SwapInterfaceTest is DSTest, Utility {
     function test_swapInterface_updateTreasury_state_change() public {
         // pre-state
         // treasury is the expected address.
-        assertEq(swapInterface.Treasury(), address(1));
+        assertEq(swapInterface.Treasury(), address(treasury));
 
         // state change
         // owner changes the address to a new one.
