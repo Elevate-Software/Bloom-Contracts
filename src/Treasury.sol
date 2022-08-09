@@ -28,7 +28,6 @@ contract Treasury is Ownable {
     address public swapInterfaceContract;    /// @notice Used to store the address of SwapInterface.sol
     address public bloomToken;               /// @notice Used to store the address of the Bloom Token.
    
-
     // TODO: Consider making investorLibrary private -> write get functions for investorData points
     mapping(address => InvestorData) public investorLibrary;     /// @notice Mapping of Investor wallets to their investment data held in InvestorData.
     address[] public authorizedUsers;                            /// @notice Array of addresses that are authorized Bloom Admins.
@@ -59,6 +58,7 @@ contract Treasury is Ownable {
         uint timeUnix;
     }
 
+
     // -----------
     // Constructor
     // -----------
@@ -79,6 +79,7 @@ contract Treasury is Ownable {
         authorizedUsers.push(owner());
     }
 
+
     // ------
     // Events
     // ------
@@ -91,6 +92,7 @@ contract Treasury is Ownable {
 
     event StableCurrencyUpdated(address currentStable, address newStable);
     
+
     // ---------
     // Modifiers
     // ---------
@@ -163,12 +165,6 @@ contract Treasury is Ownable {
         authorizedUsers.push(_wallet);
     }
 
-        /// @notice This function gets the number of wallets inside the authorizedUsers array.
-    /// @return uint Number of wallets inside array.
-    function getNumOfAuthorizedUsers() public view returns (uint) {
-        return authorizedUsers.length;
-    }
-
     /// @notice Allows the contract owner to remove authorized wallets from the authorizedUser[] array.
     /// @param _wallet contains wallet address we wish to remove to the authorizedUsers[] array.
     function removeAuthorizedUser(address _wallet) public onlyOwner() {
@@ -188,39 +184,15 @@ contract Treasury is Ownable {
         authorizedUsers.pop();
     }
 
-
-
-    /// @notice Function returns a boolean on whether the wallet is added to the authorizedUsers[] array.
-    /// @param  _wallet The wallet address we wish to know is or is not inside the array.
-    /// @return bool true if wallet is inside the array, otherwise false.
-    function getAuthorizedUser(address _wallet) public view returns (bool) {
-        if (getNumOfAuthorizedUsers() > 0) {
-            for (uint i = 0; i < getNumOfAuthorizedUsers(); i++) {
-                if (authorizedUsers[i] == _wallet) {
-                    return true;
-                }
-            }
-        } else {
-            return false;
-        }
-        return false;
-    }
-
     /// @notice Withdraws asset to owner wallet.
     /// @param _token is the contract address of token we want to withdraw.
     function safeWithdraw(address _token) public onlyOwner() {
 
     }
 
-    /// @notice Deposit assets into the contract
-    /// @param _token is the contract address of token we want to withdraw.
-    function safeDeposit(address _token) public onlyOwner() {
-
-    }
-
     /// @notice Pays dividends to the investor.
     function payDividends() public onlyOwner() returns(uint) {
-
+        // TODO: figure out method of dividend payouts.
     }
 
     /// @notice Updates stablecurrency to _stablecurrency.
@@ -250,7 +222,7 @@ contract Treasury is Ownable {
     /// @notice deposits dividend payment to a depository.
     /// @param  _amntDividends stores the amount of dividends to be paid to an investor.
     function depositDividends(uint _amntDividends) public onlyOwner() {
-
+        // TODO: figure out method of dividend payouts.
     }
 
 
@@ -281,5 +253,27 @@ contract Treasury is Ownable {
     /// @return DividendReceipt[] array of dividends received by this wallet.
     function getDividendLibrary(address _wallet) public view returns (DividendReceipt[] memory) {
         return investorLibrary[_wallet].dividendLibrary;
+    }
+
+    /// @notice This function gets the number of wallets inside the authorizedUsers array.
+    /// @return uint Number of wallets inside array.
+    function getNumOfAuthorizedUsers() public view returns (uint) {
+        return authorizedUsers.length;
+    }
+
+    /// @notice Function returns a boolean on whether the wallet is added to the authorizedUsers[] array.
+    /// @param  _wallet The wallet address we wish to know is or is not inside the array.
+    /// @return bool true if wallet is inside the array, otherwise false.
+    function getAuthorizedUser(address _wallet) public view returns (bool) {
+        if (getNumOfAuthorizedUsers() > 0) {
+            for (uint i = 0; i < getNumOfAuthorizedUsers(); i++) {
+                if (authorizedUsers[i] == _wallet) {
+                    return true;
+                }
+            }
+        } else {
+            return false;
+        }
+        return false;
     }
 }
