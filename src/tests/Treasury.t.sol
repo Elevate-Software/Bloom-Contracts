@@ -249,7 +249,7 @@ contract TreasuryTest is DSTest, Utility {
         // Post-State check.
         // Dev now should have 2000 USD, which indicates a successful withdraw.
         assertEq(IERC20(treasury.stableCurrency()).balanceOf(address(dev)), 2000 * USD);
-        
-        
+        assertEq(IERC20(treasury.stableCurrency()).balanceOf(address(treasury)), 0);
+         
     }
 }
