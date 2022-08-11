@@ -155,7 +155,6 @@ contract SwapInterface is Ownable{
     function invest(address asset, uint256 amount) external isWhitelistedWallet() {
         require(contractEnabled, "swapInterface.sol::invest(), Contract not enabled.");
 
-        // uses check-effects-interaction pattern. (unsure if it's necessary here because we are transferring from the user?)
         IERC20(asset).safeTransferFrom(msg.sender, address(this), amount);
         uint256 amountInvested = swap(asset, amount, msg.sender);
 
