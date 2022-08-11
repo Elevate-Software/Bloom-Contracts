@@ -209,10 +209,7 @@ contract TreasuryTest is DSTest, Utility {
     // ~ safeWithdraw() Testing ~
 
     function test_treasury_safeWithdraw_restrictions() public {
-
-
       // Make sure our safeWithdraw function does not allow users to withdraw with 0 funds available.
-      assertEq(IERC20(treasury.stableCurrency()).balanceOf(address(treasury)), 0);
       assert(!dev.try_safeWithdraw(address(treasury), USDC));
         
       // Add funds to contract balance of stableCurrency inside Treasury.sol.
@@ -229,7 +226,6 @@ contract TreasuryTest is DSTest, Utility {
 
       // "val" should not be able to call safeWithdraw().
       assert(!val.try_safeWithdraw(address(treasury), USDC));
-
     }
 
     function test_treasury_safeWithdraw_state_changes() public {
