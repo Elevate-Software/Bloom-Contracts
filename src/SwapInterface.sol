@@ -34,7 +34,6 @@ contract SwapInterface is Ownable{
 
     address public Treasury;           /// @notice Used to transfer USDC to treasury.
 
-    mapping(address => InvestmentData) private investmentTracker;   /// @notice Tracks wallets and their individual investments made.
     mapping(address => bool) public whitelistedToken;               /// @notice Whitelist for coins accepted for investment.
     mapping(address => bool) public whitelistedWallet;              /// @notice Whitelist for wallets allowed to invest.
     mapping(address => bool) public isAuthorizedUser;               /// @notice Admin wallets be added to this mapping.
@@ -60,9 +59,9 @@ contract SwapInterface is Ownable{
     address constant WBTC  = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599;
 
     // curve swap addresses
-    address constant _3PoolSwapAddress = 0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7;
-    address constant _FraxUSDCPoolSwapAddress = 0xDcEF968d416a41Cdac0ED8702fAC8128A64241A2;
-    address constant _tricrypto2PoolSwapAddress = 0xD51a44d3FaE010294C616388b506AcdA1bfAAE46;
+    address constant _3POOL_SWAP_ADDRESS = 0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7;
+    address constant _FRAXUSDC_SWAP_ADDRESS = 0xDcEF968d416a41Cdac0ED8702fAC8128A64241A2;
+    address constant _TRICRYPTO2_SWAP_ADDRESS = 0xD51a44d3FaE010294C616388b506AcdA1bfAAE46;
 
 
     // -----------
@@ -76,6 +75,10 @@ contract SwapInterface is Ownable{
         address _stableCurrency,
         address _admin
     ) {
+        // zero address checks
+        require(_stableCurrency != address(0), "SwapInterface.sol::constructor(), _stableCurrency not set.");
+        require(_admin != address(0), "SwapInterface.sol::constructor(), _admin not set.");
+
         stableCurrency = _stableCurrency;
 
         transferOwnership(_admin);
@@ -105,13 +108,13 @@ contract SwapInterface is Ownable{
 
     /// @notice Only authorized users can call functions with this modifier.
     modifier isAuthorized() {
-        require(isAuthorizedUser[msg.sender] == true, "SwapInterface.sol::isAuthorized(), User is not authorized.");
+        require(isAuthorizedUser[msg.sender], "SwapInterface.sol::isAuthorized(), User is not authorized.");
         _;
     }
 
     /// @notice Only whitelisted users can call functions with this modifier.
     modifier isWhitelistedWallet() {
-        require(whitelistedWallet[msg.sender] == true, "SwapInterface.sol::isWhitelistedWallet(), User is not authorized.");
+        require(whitelistedWallet[msg.sender], "SwapInterface.sol::isWhitelistedWallet(), User is not authorized.");
         _;
     }
 
@@ -173,7 +176,7 @@ contract SwapInterface is Ownable{
     // TODO: should we swap for a given amount, or just try to use the contract's currency balance?
     // TODO: discuss any other potential whitelisted currencies or how we can make a dynamic whitelist.
     function swap(address asset, uint256 amount, address _address) internal returns (uint256 amountInvestedUSDC) {
-        require(whitelistedToken[asset] == true, "swapInterface.sol::swap(), Swapping is disabled for this token.");
+        require(whitelistedToken[asset], "swapInterface.sol::swap(), Swapping is disabled for this token.");
 
         uint256 min_dy = 1;
 
@@ -188,52 +191,53 @@ contract SwapInterface is Ownable{
 
         if (asset == DAI) {
             // swap 0 for 1
-            IERC20(asset).approve(_3PoolSwapAddress, amount);
-            curve3PoolStableSwap(_3PoolSwapAddress).exchange(int128(0), int128(1), amount, min_dy);
+            assert(IERC20(asset).approve(_3POOL_SWAP_ADDRESS, amount));
+            curve3PoolStableSwap(_3POOL_SWAP_ADDRESS).exchange(int128(0), int128(1), amount, min_dy);
         }
 
         else if (asset == USDT) {
             // swap 2 for 1
-            IERC20(asset).safeApprove(_3PoolSwapAddress, amount);   // NOTE: USDT is not ERC20 compliant, so we use SafeERC20 safeApprove.
-            curve3PoolStableSwap(_3PoolSwapAddress).exchange(int128(2), int128(1), amount, min_dy);
+            IERC20(asset).safeApprove(_3POOL_SWAP_ADDRESS, amount);   // NOTE: USDT is not ERC20 compliant, so we use SafeERC20 safeApprove.
+            curve3PoolStableSwap(_3POOL_SWAP_ADDRESS).exchange(int128(2), int128(1), amount, min_dy);
         }
 
         else if (asset == FRAX) {
             // swap 0 for 1
-            IERC20(asset).approve(_FraxUSDCPoolSwapAddress, amount);
-            curveFraxUSDCStableSwap(_FraxUSDCPoolSwapAddress).exchange(int128(0), int128(1), amount, min_dy);
+            assert(IERC20(asset).approve(_FRAXUSDC_SWAP_ADDRESS, amount));
+            curveFraxUSDCStableSwap(_FRAXUSDC_SWAP_ADDRESS).exchange(int128(0), int128(1), amount, min_dy);
         }
 
         else if (asset == WETH) {
             // swap 2 for 0, 2 for 1
-            IERC20(asset).approve(_tricrypto2PoolSwapAddress, amount);
-            curveTriCrypto2StableSwap(_tricrypto2PoolSwapAddress).exchange(uint256(2), uint256(0), amount, min_dy);
+            assert(IERC20(asset).approve(_TRICRYPTO2_SWAP_ADDRESS, amount));
+            curveTriCrypto2StableSwap(_TRICRYPTO2_SWAP_ADDRESS).exchange(uint256(2), uint256(0), amount, min_dy);
 
-            IERC20(USDT).safeApprove(_3PoolSwapAddress, uint256(IERC20(USDT).balanceOf(address(this))));
-            curve3PoolStableSwap(_3PoolSwapAddress).exchange(int128(2), int128(1), uint256(IERC20(USDT).balanceOf(address(this))), min_dy);
+            IERC20(USDT).safeApprove(_3POOL_SWAP_ADDRESS, uint256(IERC20(USDT).balanceOf(address(this))));
+            curve3PoolStableSwap(_3POOL_SWAP_ADDRESS).exchange(int128(2), int128(1), uint256(IERC20(USDT).balanceOf(address(this))), min_dy);
         }
 
         else if (asset == WBTC) {
             // swap 1 for 0, 2 for 1
-            IERC20(asset).approve(_tricrypto2PoolSwapAddress, amount);
-            curveTriCrypto2StableSwap(_tricrypto2PoolSwapAddress).exchange(uint256(1), uint256(0), amount, min_dy);
+            assert(IERC20(asset).approve(_TRICRYPTO2_SWAP_ADDRESS, amount));
+            curveTriCrypto2StableSwap(_TRICRYPTO2_SWAP_ADDRESS).exchange(uint256(1), uint256(0), amount, min_dy);
 
-            IERC20(USDT).safeApprove(_3PoolSwapAddress, uint256(IERC20(USDT).balanceOf(address(this))));
-            curve3PoolStableSwap(_3PoolSwapAddress).exchange(int128(2), int128(1), uint256(IERC20(USDT).balanceOf(address(this))), min_dy);
+            IERC20(USDT).safeApprove(_3POOL_SWAP_ADDRESS, uint256(IERC20(USDT).balanceOf(address(this))));
+            curve3PoolStableSwap(_3POOL_SWAP_ADDRESS).exchange(int128(2), int128(1), uint256(IERC20(USDT).balanceOf(address(this))), min_dy);
         }
 
         // USDC doesn't need to be swapped via curve.
 
         // transfer swapped asset to treasury.
         uint256 amountUSDC = IERC20(USDC).balanceOf(address(this));
-        IERC20(USDC).transfer(Treasury, amountUSDC);
+        assert(IERC20(USDC).transfer(Treasury, amountUSDC));
+
         ITreasury(Treasury).updateStableReceived(_address, amountUSDC, block.timestamp);
         return amountUSDC;
     }
 
     /// @notice Changes the stable currency address.
     /// @param _stableCurrency The new stable currency contact address.
-    function changeStableCurrency(address _stableCurrency) public onlyOwner() {
+    function changeStableCurrency(address _stableCurrency) external onlyOwner() {
         require(stableCurrency != _stableCurrency, "Treasury.sol::updateStableCurrency() stableCurrency should not equal _stableCurrency.");
         require(IERC20(_stableCurrency).decimals() >= 6, "Treasury.sol::updateStableCurrency() decimal precision of _stableCurrency needs to be >= 6.");
         
@@ -257,14 +261,15 @@ contract SwapInterface is Ownable{
     /// @notice Updates which tokens are accepted for investments.
     /// @param tokenAddress The contact address for the token we are updating.
     /// @param isAllowed true to accept investments of this token, false to decline.
-    function updateTokenWhitelist(address tokenAddress, bool isAllowed) public onlyOwner() {
+    function updateTokenWhitelist(address tokenAddress, bool isAllowed) external onlyOwner() {
         emit TokenWhitelistStateUpdated(tokenAddress, isAllowed);
         whitelistedToken[tokenAddress] = isAllowed;
     }
 
     /// @notice Updates address of the Treasury contract.
     /// @param newAddress The new address of the treasury.
-    function updateTreasury(address newAddress) public onlyOwner() {
+    function updateTreasury(address newAddress) external onlyOwner() {
+        require(newAddress != address(0), "SwapInterface.sol::updateTreasury(), newAddress parameter not set.");
         emit TreasuryAddressUpdated(newAddress);
         Treasury = newAddress;
         treasurySet = true;
@@ -274,7 +279,7 @@ contract SwapInterface is Ownable{
 
     /// @notice Should return contract balance of stableCurrency.
     /// @return uint256 Amount of stableCurrency that is inside contract.
-    function balanceOfToken(address token) public view returns (uint256) {
+    function balanceOfToken(address token) external view returns (uint256) {
         return IERC20(token).balanceOf(address(this));
     }
 }
