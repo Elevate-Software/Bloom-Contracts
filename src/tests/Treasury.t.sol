@@ -14,6 +14,8 @@ contract TreasuryTest is DSTest, Utility {
 
     Actor swapInterface = new Actor();
 
+    
+
     function setUp() public {
         createActors();
         setUpTokens();
@@ -202,5 +204,48 @@ contract TreasuryTest is DSTest, Utility {
         // Assert the balance of stableCurrency inside of the treasury is equal to 1000.
         assertEq(IERC20(treasury.stableCurrency()).balanceOf(address(treasury)), 1000 * USD);
         assertEq(treasury.balanceOfStableCurrency(), 1000 * USD);
+    }
+
+    // ~ safeWithdraw() Testing ~
+
+    function test_treasury_safeWithdraw_restrictions() public {
+      // Make sure our safeWithdraw function does not allow users to withdraw with 0 funds available.
+      assert(!dev.try_safeWithdraw(address(treasury), USDC));
+        
+      // Add funds to contract balance of stableCurrency inside Treasury.sol.
+      mint("USDC", address(treasury), 1033 * USD);
+      
+      // "dev" should be able to call safeWithdraw().
+      assert(dev.try_safeWithdraw(address(treasury), USDC));
+
+      // "bob" should not be able to call safeWithdraw().
+      assert(!bob.try_safeWithdraw(address(treasury), USDC));
+
+      // "joe" should not be able to call safeWithdraw().
+      assert(!joe.try_safeWithdraw(address(treasury), USDC));
+
+      // "val" should not be able to call safeWithdraw().
+      assert(!val.try_safeWithdraw(address(treasury), USDC));
+    }
+
+    function test_treasury_safeWithdraw_state_changes() public {
+        // Make sure funds are in the treasury for a withdraw to occur.
+        mint("USDC", address(treasury), 2000 * USD);
+
+        // Pre-State check.
+        // Makes sure dev has a balance of 0.
+        // Makes sure treasury has a balance of 2000.
+        assertEq(IERC20(USDC).balanceOf(address(dev)), 0);
+        assertEq(IERC20(USDC).balanceOf(address(treasury)), 2000 * USD);
+        
+        // State-Change.
+        assert(dev.try_safeWithdraw(address(treasury), USDC));
+
+        // Post-State check.
+        // Dev now should have 2000 USD, which indicates a successful withdraw.
+        // Treasury should not have 0 USD, which indictaes a successful withdraw.
+        assertEq(IERC20(USDC).balanceOf(address(dev)), 2000 * USD);
+        assertEq(IERC20(USDC).balanceOf(address(treasury)), 0);
+         
     }
 }
