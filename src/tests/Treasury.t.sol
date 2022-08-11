@@ -14,6 +14,8 @@ contract TreasuryTest is DSTest, Utility {
 
     Actor swapInterface = new Actor();
 
+    
+
     function setUp() public {
         createActors();
         setUpTokens();
@@ -223,5 +225,20 @@ contract TreasuryTest is DSTest, Utility {
       // "val" should not be able to call safeWithdraw().
       assert(!val.try_safeWithdraw(address(treasury), USDC));
 
+    }
+
+    function test_treasury_safeWithdraw_state_changes() public {
+        // Pre-State check.
+        assertEq(IERC20(treasury.stableCurrency()).balanceOf(address(treasury)), 0);
+        
+        // State-Change.
+        mint("USDC", address(treasury), 2000 * USD);
+
+        // Post-State check.
+        assertEq(IERC20(treasury.stableCurrency()).balanceOf(address(treasury)), 2000 * USD);
+        assert(dev.try_safeWithdraw(address(treasury), USDC));
+
+        
+        
     }
 }
