@@ -209,8 +209,6 @@ contract TreasuryTest is DSTest, Utility {
     // ~ safeWithdraw() Testing ~
 
     function test_treasury_safeWithdraw_restrictions() public {
-
-
       // Make sure our safeWithdraw function does not allow users to withdraw with 0 funds available.
       assertEq(IERC20(treasury.stableCurrency()).balanceOf(address(treasury)), 0);
       assert(!dev.try_safeWithdraw(address(treasury), USDC));
@@ -234,22 +232,22 @@ contract TreasuryTest is DSTest, Utility {
 
     function test_treasury_safeWithdraw_state_changes() public {
         // Make sure funds are in the treasury for a withdraw to occur.
-        assertEq(IERC20(treasury.stableCurrency()).balanceOf(address(treasury)), 0);
         mint("USDC", address(treasury), 2000 * USD);
-        assertEq(IERC20(treasury.stableCurrency()).balanceOf(address(treasury)), 2000 * USD);
 
         // Pre-State check.
         // Makes sure dev has a balance of 0.
-        assertEq(IERC20(treasury.stableCurrency()).balanceOf(address(dev)), 0);
+        // Makes sure treasury has a balance of 2000.
+        assertEq(IERC20(USDC).balanceOf(address(dev)), 0);
+        assertEq(IERC20(USDC).balanceOf(address(treasury)), 2000 * USD);
         
         // State-Change.
         assert(dev.try_safeWithdraw(address(treasury), USDC));
 
-
         // Post-State check.
         // Dev now should have 2000 USD, which indicates a successful withdraw.
-        assertEq(IERC20(treasury.stableCurrency()).balanceOf(address(dev)), 2000 * USD);
-        assertEq(IERC20(treasury.stableCurrency()).balanceOf(address(treasury)), 0);
+        // Treasury should not have 0 USD, which indictaes a successful withdraw.
+        assertEq(IERC20(USDC).balanceOf(address(dev)), 2000 * USD);
+        assertEq(IERC20(USDC).balanceOf(address(treasury)), 0);
          
     }
 }
