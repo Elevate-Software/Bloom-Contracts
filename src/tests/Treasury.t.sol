@@ -233,16 +233,20 @@ contract TreasuryTest is DSTest, Utility {
     }
 
     function test_treasury_safeWithdraw_state_changes() public {
-        // Pre-State check.
+        // Make sure funds are in the treasury for a withdraw to occur.
         assertEq(IERC20(treasury.stableCurrency()).balanceOf(address(treasury)), 0);
+        mint("USDC", address(treasury), 2000 * USD);
+        assertEq(IERC20(treasury.stableCurrency()).balanceOf(address(treasury)), 2000 * USD);
+
+        // Pre-State check.
+        assertEq(IERC20(treasury.stableCurrency()).balanceOf(address(dev)), 0);
         
         // State-Change.
-        mint("USDC", address(treasury), 2000 * USD);
-
-        // Post-State check.
-        assertEq(IERC20(treasury.stableCurrency()).balanceOf(address(treasury)), 2000 * USD);
         assert(dev.try_safeWithdraw(address(treasury), USDC));
 
+
+        // Post-State check.
+        assertEq(IERC20(treasury.stableCurrency()).balanceOf(address(dev)), 2000 * USD);
         
         
     }
