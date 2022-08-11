@@ -76,6 +76,10 @@ contract SwapInterface is Ownable{
         address _stableCurrency,
         address _admin
     ) {
+        // zero address checks
+        require(_stableCurrency != address(0), "SwapInterface.sol::constructor(), _stableCurrency not set.");
+        require(_admin != address(0), "SwapInterface.sol::constructor(), _admin not set.");
+
         stableCurrency = _stableCurrency;
 
         transferOwnership(_admin);
@@ -105,13 +109,13 @@ contract SwapInterface is Ownable{
 
     /// @notice Only authorized users can call functions with this modifier.
     modifier isAuthorized() {
-        require(isAuthorizedUser[msg.sender] == true, "SwapInterface.sol::isAuthorized(), User is not authorized.");
+        require(isAuthorizedUser[msg.sender], "SwapInterface.sol::isAuthorized(), User is not authorized.");
         _;
     }
 
     /// @notice Only whitelisted users can call functions with this modifier.
     modifier isWhitelistedWallet() {
-        require(whitelistedWallet[msg.sender] == true, "SwapInterface.sol::isWhitelistedWallet(), User is not authorized.");
+        require(whitelistedWallet[msg.sender], "SwapInterface.sol::isWhitelistedWallet(), User is not authorized.");
         _;
     }
 
@@ -173,9 +177,10 @@ contract SwapInterface is Ownable{
     // TODO: should we swap for a given amount, or just try to use the contract's currency balance?
     // TODO: discuss any other potential whitelisted currencies or how we can make a dynamic whitelist.
     function swap(address asset, uint256 amount, address _address) internal returns (uint256 amountInvestedUSDC) {
-        require(whitelistedToken[asset] == true, "swapInterface.sol::swap(), Swapping is disabled for this token.");
+        require(whitelistedToken[asset], "swapInterface.sol::swap(), Swapping is disabled for this token.");
 
         uint256 min_dy = 1;
+        bool approveSuccess;
 
         // swap given asset to stable currency (USDC).
             // ETH -> WETH -> USDT -> USDC
@@ -188,7 +193,8 @@ contract SwapInterface is Ownable{
 
         if (asset == DAI) {
             // swap 0 for 1
-            IERC20(asset).approve(_3PoolSwapAddress, amount);
+            approveSuccess = IERC20(asset).approve(_3PoolSwapAddress, amount);
+            //TODO: Something with approveSuccess
             curve3PoolStableSwap(_3PoolSwapAddress).exchange(int128(0), int128(1), amount, min_dy);
         }
 
@@ -200,13 +206,15 @@ contract SwapInterface is Ownable{
 
         else if (asset == FRAX) {
             // swap 0 for 1
-            IERC20(asset).approve(_FraxUSDCPoolSwapAddress, amount);
+            approveSuccess = IERC20(asset).approve(_FraxUSDCPoolSwapAddress, amount);
+            //TODO: Something with approveSuccess
             curveFraxUSDCStableSwap(_FraxUSDCPoolSwapAddress).exchange(int128(0), int128(1), amount, min_dy);
         }
 
         else if (asset == WETH) {
             // swap 2 for 0, 2 for 1
-            IERC20(asset).approve(_tricrypto2PoolSwapAddress, amount);
+            approveSuccess = IERC20(asset).approve(_tricrypto2PoolSwapAddress, amount);
+            //TODO: Something with approveSuccess
             curveTriCrypto2StableSwap(_tricrypto2PoolSwapAddress).exchange(uint256(2), uint256(0), amount, min_dy);
 
             IERC20(USDT).safeApprove(_3PoolSwapAddress, uint256(IERC20(USDT).balanceOf(address(this))));
@@ -215,7 +223,8 @@ contract SwapInterface is Ownable{
 
         else if (asset == WBTC) {
             // swap 1 for 0, 2 for 1
-            IERC20(asset).approve(_tricrypto2PoolSwapAddress, amount);
+            approveSuccess = IERC20(asset).approve(_tricrypto2PoolSwapAddress, amount);
+            //TODO: Something with approveSuccess
             curveTriCrypto2StableSwap(_tricrypto2PoolSwapAddress).exchange(uint256(1), uint256(0), amount, min_dy);
 
             IERC20(USDT).safeApprove(_3PoolSwapAddress, uint256(IERC20(USDT).balanceOf(address(this))));
@@ -226,7 +235,12 @@ contract SwapInterface is Ownable{
 
         // transfer swapped asset to treasury.
         uint256 amountUSDC = IERC20(USDC).balanceOf(address(this));
-        IERC20(USDC).transfer(Treasury, amountUSDC);
+        bool transferSuccess = IERC20(USDC).transfer(Treasury, amountUSDC);
+
+        if (!transferSuccess) {
+            //TODO: what should happen if the transfer doesn't work?
+        }
+
         ITreasury(Treasury).updateStableReceived(_address, amountUSDC, block.timestamp);
         return amountUSDC;
     }
@@ -265,6 +279,7 @@ contract SwapInterface is Ownable{
     /// @notice Updates address of the Treasury contract.
     /// @param newAddress The new address of the treasury.
     function updateTreasury(address newAddress) public onlyOwner() {
+        require(newAddress != address(0), "SwapInterface.sol::updateTreasury(), newAddress parameter not set.");
         emit TreasuryAddressUpdated(newAddress);
         Treasury = newAddress;
         treasurySet = true;
