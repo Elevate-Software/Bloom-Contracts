@@ -84,6 +84,10 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         // "dev" should be able to call addAuthorizedUser().
         assert(dev.try_addWalletToAuthorizedUsers(address(swapInterface), address(joe)));
+
+
+        // should not be able to add
+        assert(!dev.try_addWalletToAuthorizedUsers(address(swapInterface), address(joe)));
     }
 
     // ~ removeAuthorizedUser() Testing ~
@@ -102,6 +106,10 @@ contract SwapInterfaceTest is DSTest, Utility {
 
     // removeAuthorizedUser restrictions.
     function test_swapInterface_removeAuthorizedUser_restrictions() public {
+        // setup: add joe to authorized users list.
+        dev.try_addWalletToAuthorizedUsers(address(swapInterface), address(joe));
+
+
         // "joe" should not be able to call removeAuthorizedUser().
         assert(!joe.try_removeWalletFromAuthorizedUsers(address(swapInterface), address(joe)));
 
@@ -113,12 +121,16 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         // "dev" should be able to call removeAuthorizedUser().
         assert(dev.try_removeWalletFromAuthorizedUsers(address(swapInterface), address(joe)));
+
+
+        // should not be able to remove users that have already been removed.
+        assert(!dev.try_removeWalletFromAuthorizedUsers(address(swapInterface), address(joe)));
     }
 
     // ~ addWalletToWhitelist() Testing ~
 
     // addWalletToWhitelist state changes.
-    function test_swapInterface_swapInterfaceaddWalletToWhitelist_state_changes() public {
+    function test_swapInterface_swapInterface_addWalletToWhitelist_state_changes() public {
         //Pre state
         assert(!swapInterface.whitelistedWallet(address(joe)));
 
@@ -142,7 +154,12 @@ contract SwapInterfaceTest is DSTest, Utility {
         assert(val.try_addWalletToWhitelist(address(swapInterface), address(joe)));
 
         // "dev" should be able to call addWalletToWhitelist().
+        dev.try_removeWalletFromWhitelist(address(swapInterface), address(joe));    // NOTE: joe must be removed again or add won't function properly.
         assert(dev.try_addWalletToWhitelist(address(swapInterface), address(joe)));
+
+
+        // should not be able to add wallets that have already been added.
+        assert(!dev.try_addWalletToWhitelist(address(swapInterface), address(joe)));
 
     }
 
@@ -162,6 +179,10 @@ contract SwapInterfaceTest is DSTest, Utility {
 
     // removeWalletFromWhitelist restrictions.
     function test_swapInterface_removeWalletFromWhitelist_restrictions() public {
+        // setup: add joe to whitelist.
+        dev.try_addWalletToWhitelist(address(swapInterface), address(joe));
+
+
         // "joe" should not be able to call removeWalletFromWhitelist().
         assert(!joe.try_removeWalletFromWhitelist(address(swapInterface), address(joe)));
 
@@ -172,7 +193,12 @@ contract SwapInterfaceTest is DSTest, Utility {
         assert(val.try_removeWalletFromWhitelist(address(swapInterface), address(joe)));
 
         // "dev" should be able to call removeWalletFromWhitelist().
+        dev.try_addWalletToWhitelist(address(swapInterface), address(joe));     // NOTE: joe must be added again or the remove will not function properly.
         assert(dev.try_removeWalletFromWhitelist(address(swapInterface), address(joe)));
+
+
+        // should not be able to remove addresses that have already been removed.
+        assert(!dev.try_removeWalletFromWhitelist(address(swapInterface), address(joe)));
     }
 
     // ~ changeStableCurrency() Testing ~
@@ -301,6 +327,10 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         // "dev" should be able to call updateTokenWhitelist().
         assert(dev.try_updateTokenWhitelist(address(swapInterface), DAI, true));
+
+
+        // should not be able to make redundant calls.
+        assert(!dev.try_updateTokenWhitelist(address(swapInterface), DAI, true));
     }
 
     // ~ updateTreasury() testing ~
@@ -331,6 +361,13 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         // "dev" should be able to call updateTreasury().
         assert(dev.try_updateTreasury(address(swapInterface), address(2)));
+
+
+        // should not be able to set as address 0.
+        assert(!dev.try_updateTreasury(address(swapInterface), address(0)));
+
+        // should not be able to set treasury to the same address.
+        assert(!dev.try_updateTreasury(address(swapInterface), address(2)));
     }
 
     // ~ Invest/Swap Testing ~
@@ -584,6 +621,57 @@ contract SwapInterfaceTest is DSTest, Utility {
 
         assertEq(IERC20(address(bloomToken)).totalSupply(), amountReceived * 10**12);
         assertEq(IERC20(address(bloomToken)).balanceOf(address(bob)), amountReceived * 10**12);
+    }
+
+    // ~ invest() and investETH() restrictions ~
+
+    function try_swapInterface_invest_restrictions() public {
+
+        // Allow DAI to be swapped setup.
+        dev.try_updateTokenWhitelist(address(swapInterface), DAI, true);
+
+        // "joe" should not be able to call invest().
+        assert(!joe.try_invest(address(swapInterface), DAI, 10 ether));
+
+        // "bob" should be able to call invest().
+        assert(bob.try_invest(address(swapInterface), DAI, 10 ether));
+
+        // "val" should not be able to call invest().
+        assert(!val.try_invest(address(swapInterface), DAI, 10 ether));
+
+        // "dev" should not be able to call invest().
+        assert(!dev.try_invest(address(swapInterface), DAI, 10 ether));
+
+
+        // should not be able to invest 0.
+        assert(bob.try_invest(address(swapInterface), DAI, 0 ether));
+
+        // should not be able to invest tokens that are not whitelisted.
+        assert(bob.try_invest(address(swapInterface), WBTC, 10 * BTC));
+
+        // TEMP: what happens if we try to invest 1?
+        assert(bob.try_invest(address(swapInterface), DAI, 1 ether));
+    }
+
+    function try_swapInterface_investETH_restrictions() public {
+        // "joe" should not be able to call investETH().
+        assert(!joe.try_investETH{value: 10 ether}(address(swapInterface)));
+
+        // "bob" should be able to call investETH().
+        assert(bob.try_investETH{value: 10 ether}(address(swapInterface)));
+
+        // "val" should not be able to call investETH().
+        assert(!val.try_investETH{value: 10 ether}(address(swapInterface)));
+
+        // "dev" should not be able to call investETH().
+        assert(!dev.try_investETH{value: 10 ether}(address(swapInterface)));
+
+        
+        // should not be able to invest 0.
+        assert(bob.try_investETH{value: 0 ether}(address(swapInterface)));
+
+        // TEMP: what happens if we try to invest 1?
+        assert(bob.try_investETH{value: 1 ether}(address(swapInterface)));
     }
 
 }
