@@ -64,8 +64,8 @@ contract SwapInterface is Ownable{
         address _admin
     ) {
         // zero address checks
-        require(_stableCurrency != address(0), "SwapInterface.sol::constructor(), _stableCurrency not set.");
-        require(_admin != address(0), "SwapInterface.sol::constructor(), _admin not set.");
+        require(_stableCurrency != address(0), "SwapInterface.sol::constructor() _stableCurrency not set");
+        require(_admin != address(0), "SwapInterface.sol::constructor() _admin not set");
 
         stableCurrency = _stableCurrency;
 
@@ -96,13 +96,13 @@ contract SwapInterface is Ownable{
 
     /// @notice Only authorized users can call functions with this modifier.
     modifier isAuthorized() {
-        require(isAuthorizedUser[msg.sender], "SwapInterface.sol::isAuthorized(), User is not authorized.");
+        require(isAuthorizedUser[msg.sender], "SwapInterface.sol::isAuthorized() User is not authorized");
         _;
     }
 
     /// @notice Only whitelisted users can call functions with this modifier.
     modifier isWhitelistedWallet() {
-        require(whitelistedWallet[msg.sender], "SwapInterface.sol::isWhitelistedWallet(), User is not authorized.");
+        require(whitelistedWallet[msg.sender], "SwapInterface.sol::isWhitelistedWallet() User is not authorized");
         _;
     }
 
@@ -113,7 +113,7 @@ contract SwapInterface is Ownable{
     /// @notice Adds an authorized user.
     /// @param _address The address to add as authorized user.
     function addAuthorizedUser(address _address) external onlyOwner() {
-        require(!isAuthorizedUser[_address], "SwapInterface.sol::addAuthorizedUser(), User is already authorized.");
+        require(!isAuthorizedUser[_address], "SwapInterface.sol::addAuthorizedUser() User is already authorized");
         emit AuthorizedUserUpdated(_address, true);
         isAuthorizedUser[_address] = true;
     }
@@ -121,7 +121,7 @@ contract SwapInterface is Ownable{
     /// @notice Removes an authorized user.
     /// @param _address The address to remove as authorized user.
     function removeAuthorizedUser(address _address) external onlyOwner() {
-        require(isAuthorizedUser[_address], "SwapInterface.sol::removeAuthorizedUser(), User is not authorized.");
+        require(isAuthorizedUser[_address], "SwapInterface.sol::removeAuthorizedUser() User is not authorized");
         emit AuthorizedUserUpdated(_address, false);
         isAuthorizedUser[_address] = false;
     }
@@ -130,14 +130,14 @@ contract SwapInterface is Ownable{
     /// @notice Adds a wallet to the whitelist.
     /// @param _address The wallet to add to the whitelist.
     function addWalletToWhitelist(address _address) external isAuthorized() {
-        require(!whitelistedWallet[_address], "SwapInterface.sol::addWalletToWhitelist(), User is already whitelisted.");
+        require(!whitelistedWallet[_address], "SwapInterface.sol::addWalletToWhitelist() User is already whitelisted");
         whitelistedWallet[_address] = true;
     }
 
     /// @notice Removes a wallet from the whitelist.
     /// @param _address The wallet to remove from the whitelist.
     function removeWalletFromWhitelist(address _address) external isAuthorized() {
-        require(whitelistedWallet[_address], "SwapInterface.sol::removeWalletFromWhitelist(), User is not whitelisted.");
+        require(whitelistedWallet[_address], "SwapInterface.sol::removeWalletFromWhitelist() User is not whitelisted");
         whitelistedWallet[_address] = false;
     }
 
@@ -145,9 +145,9 @@ contract SwapInterface is Ownable{
     /// @param _asset The address of the token being invested.
     /// @param _amount The amount of the token being invested.
     function invest(address _asset, uint256 _amount) external isWhitelistedWallet() {
-        require(contractEnabled, "swapInterface.sol::invest(), Contract not enabled.");
-        require(_amount > 0, "swapInterface.sol::invest(), Amount invested must be greater than 0.");
-        require(whitelistedToken[_asset], "swapInterface.sol::invest(), Investing is disabled for this token.");
+        require(contractEnabled, "swapInterface.sol::invest() Contract not enabled");
+        require(_amount > 0, "swapInterface.sol::invest() Amount invested must be greater than 0");
+        require(whitelistedToken[_asset], "swapInterface.sol::invest() Investing is disabled for this token");
 
         IERC20(_asset).safeTransferFrom(msg.sender, address(this), _amount);
         uint256 amountInvested = swap(_asset, _amount, msg.sender);
@@ -158,8 +158,8 @@ contract SwapInterface is Ownable{
     /// @notice Allows user to invest ETH into the REIT.
     /// @dev ETH is not ERC20, needs to be wrapped using the WETH contract.
     function investETH() external payable isWhitelistedWallet() {
-        require(contractEnabled, "swapInterface.sol::investETH(), Contract not enabled.");
-        require(msg.value > 0, "swapInterface.sol::investETH(), Amount invested must be greater than 0.");
+        require(contractEnabled, "swapInterface.sol::investETH() Contract not enabled");
+        require(msg.value > 0, "swapInterface.sol::investETH() Amount invested must be greater than 0");
 
         IWETH(WETH).deposit{value: msg.value}();
         uint256 amountInvested = swap(WETH, msg.value, msg.sender);
@@ -174,8 +174,8 @@ contract SwapInterface is Ownable{
     // TODO: should we swap for a given amount, or just try to use the contract's currency balance?
     // TODO: discuss any other potential whitelisted currencies or how we can make a dynamic whitelist.
     function swap(address _asset, uint256 _amount, address _address) internal returns (uint256 amountInvestedUSDC) {
-        require(_amount > 0, "swapInterface.sol::swap(), Amount must be greater than 0.");
-        require(whitelistedToken[_asset], "swapInterface.sol::swap(), Swapping is disabled for this token.");
+        require(_amount > 0, "swapInterface.sol::swap() Amount must be greater than 0");
+        require(whitelistedToken[_asset], "swapInterface.sol::swap() Swapping is disabled for this token");
 
         uint256 min_dy = 1;
 
@@ -237,8 +237,8 @@ contract SwapInterface is Ownable{
     /// @notice Changes the stable currency address.
     /// @param _stableCurrency The new stable currency contact address.
     function changeStableCurrency(address _stableCurrency) external onlyOwner() {
-        require(stableCurrency != _stableCurrency, "Treasury.sol::updateStableCurrency() stableCurrency should not equal _stableCurrency.");
-        require(IERC20(_stableCurrency).decimals() >= 6, "Treasury.sol::updateStableCurrency() decimal precision of _stableCurrency needs to be >= 6.");
+        require(stableCurrency != _stableCurrency, "swapInterface.sol::updateStableCurrency() stableCurrency should not equal _stableCurrency");
+        require(IERC20(_stableCurrency).decimals() >= 6, "swapInterface.sol::updateStableCurrency() decimal precision of _stableCurrency needs to be >= 6");
         
         emit StableCurrencyUpdated(stableCurrency, _stableCurrency);
         stableCurrency = _stableCurrency;
@@ -246,13 +246,15 @@ contract SwapInterface is Ownable{
 
     /// @notice Allows owner to disable smart contract operations.
     function disableContract() external onlyOwner() {
+        require(!contractEnabled, "swapInterface.sol::disableContract() contract is already disabled");
         emit ContractStateUpdated(false);
         contractEnabled = false;
     }
 
     /// @notice Allows owner to enable contract if disabled.
     function enableContract() external onlyOwner() {
-        require(treasurySet, "swapInterface.sol::invest(), Treasury not set.");
+        require(contractEnabled, "swapInterface.sol::enableContract() contract is already enabled");
+        require(treasurySet, "swapInterface.sol::invest() Treasury not set");
         emit ContractStateUpdated(true);
         contractEnabled = true;
     }
@@ -261,7 +263,7 @@ contract SwapInterface is Ownable{
     /// @param _token The contact address for the token we are updating.
     /// @param _isAllowed true to accept investments of this token, false to decline.
     function updateTokenWhitelist(address _token, bool _isAllowed) external onlyOwner() {
-        require(whitelistedToken[_token] == !_isAllowed, "swapInterface.sol::updateTokenWhitelist(), token state is already as requested.");   //TODO: see if we need this
+        require(whitelistedToken[_token] == !_isAllowed, "swapInterface.sol::updateTokenWhitelist() token state is already as requested");
         emit TokenWhitelistStateUpdated(_token, _isAllowed);
         whitelistedToken[_token] = _isAllowed;
     }
@@ -269,8 +271,8 @@ contract SwapInterface is Ownable{
     /// @notice Updates address of the Treasury contract.
     /// @param _newAddress The new address of the treasury.
     function updateTreasury(address _newAddress) external onlyOwner() {
-        require(_newAddress != address(0), "SwapInterface.sol::updateTreasury(), _newAddress parameter not set.");
-        require(_newAddress != Treasury, "SwapInterface.sol::updateTreasury(), new Treasury address must be different from the old one.");
+        require(_newAddress != address(0), "SwapInterface.sol::updateTreasury() _newAddress parameter not set");
+        require(_newAddress != Treasury, "SwapInterface.sol::updateTreasury() new Treasury address must be different from the old one");
         emit TreasuryAddressUpdated(_newAddress);
         Treasury = _newAddress;
         treasurySet = true;
@@ -282,6 +284,6 @@ contract SwapInterface is Ownable{
     /// @param _token Contact address of token to check the balance of.
     /// @return uint256 Amount of stableCurrency that is inside contract.
     function balanceOfToken(address _token) external view returns (uint256) {
-        return IERC20(_token).balanceOf(address(this));
+        return IERC20(_token).balanceOf(address(this)); // TODO: balance of this contract or of treasury contract?
     }
 }
