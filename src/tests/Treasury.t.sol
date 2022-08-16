@@ -248,4 +248,32 @@ contract TreasuryTest is DSTest, Utility {
         assertEq(IERC20(USDC).balanceOf(address(treasury)), 0);
          
     }
+
+    // ~ updateSwapInterface Testing ~
+
+    function test_treasury_updateSwapInterface_restrictions() public {
+        // Make sure Dev can run this function and Joe can not.
+        assert(dev.try_updateSwapInterface(address(treasury), address(1)));
+        assert(!joe.try_updateSwapInterface(address(treasury), address(1)));
+
+        // Make sure _newSwapInterface is not equal to a wallet address(0).
+        assert(!dev.try_updateSwapInterface(address(treasury), address(0)));
+
+        // Make sure swapInterfaceContract address is not equal to _newSwapInterface address.
+        assert(!dev.try_updateSwapInterface(address(treasury), address(1)));
+    }
+
+    function test_treasury_updateSwapInterface_state_changes() public {
+        // Pre-State check.
+        // Make sure swapInterfaceContrac is equal to address(swapInterface).
+        assertEq(treasury.swapInterfaceContract(), address(swapInterface));
+
+        // State-change.
+        // Set _newSwapInterface to address(1).
+        assert(dev.try_updateSwapInterface(address(treasury), address(1)));
+
+        // Post-State check.
+        // Make sure address(1) equals _newSwapInterface.
+        assertEq(treasury.swapInterfaceContract(), address(1));
+    }
 }
