@@ -235,6 +235,7 @@ contract SwapInterfaceTest is DSTest, Utility {
     // enable contract state changes.
     function test_swapInterface_enableContract_state_changes() public {
         dev.try_disableContract(address(swapInterface));
+
         // pre-state
         assertTrue(!swapInterface.contractEnabled());
 
@@ -247,6 +248,8 @@ contract SwapInterfaceTest is DSTest, Utility {
 
     // enable contract restrictions
     function test_swapInterface_enableContract_restrictions() public {
+        dev.try_disableContract(address(swapInterface));
+
         // "joe" should not be able to call enableContract().
         assert(!joe.try_enableContract(address(swapInterface)));
 
@@ -265,8 +268,6 @@ contract SwapInterfaceTest is DSTest, Utility {
 
     // disable contract state changes.
     function test_swapInterface_disableContract_state_changes() public {
-        // Dev will enable contract.
-        assert(dev.try_enableContract(address(swapInterface)));
 
         // pre-state
         assertTrue(swapInterface.contractEnabled());

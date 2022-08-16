@@ -246,14 +246,14 @@ contract SwapInterface is Ownable{
 
     /// @notice Allows owner to disable smart contract operations.
     function disableContract() external onlyOwner() {
-        require(!contractEnabled, "swapInterface.sol::disableContract() contract is already disabled");
+        require(contractEnabled, "swapInterface.sol::disableContract() contract is already disabled");
         emit ContractStateUpdated(false);
         contractEnabled = false;
     }
 
     /// @notice Allows owner to enable contract if disabled.
     function enableContract() external onlyOwner() {
-        require(contractEnabled, "swapInterface.sol::enableContract() contract is already enabled");
+        require(!contractEnabled, "swapInterface.sol::enableContract() contract is already enabled");
         require(treasurySet, "swapInterface.sol::invest() Treasury not set");
         emit ContractStateUpdated(true);
         contractEnabled = true;
