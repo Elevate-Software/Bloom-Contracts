@@ -254,6 +254,7 @@ contract TreasuryTest is DSTest, Utility {
     function test_treasury_updateSwapInterface_restrictions() public {
         // Make sure Dev can run this function and Joe can not.
         assert(dev.try_updateSwapInterface(address(treasury), address(1)));
+        // Make sure joe can not run this function.
         assert(!joe.try_updateSwapInterface(address(treasury), address(1)));
 
         // Make sure _newSwapInterface is not equal to a wallet address(0).

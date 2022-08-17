@@ -219,8 +219,8 @@ contract Treasury is Ownable {
     /// @notice updates swapInterfaceContract.
     /// @param _newSwapInterface stores contract address of SwapInterface.sol.
     function updateSwapInterface(address _newSwapInterface) external onlyOwner() {
-        require(_newSwapInterface != address(0), "Treasury.sol::updateSwapInterface(), _newSwapInterface address can not equal address(0).");
-        require(swapInterfaceContract != _newSwapInterface, "Treasury.sol::updateSwapInterface(), swapInterfaceContract can not be equal to _newSwapInterface");
+        require(_newSwapInterface != address(0), "Treasury.sol::updateSwapInterface() _newSwapInterface address can not equal address(0)");
+        require(swapInterfaceContract != _newSwapInterface, "Treasury.sol::updateSwapInterface() swapInterfaceContract can not be equal to _newSwapInterface");
         swapInterfaceContract = _newSwapInterface;
     }
 
