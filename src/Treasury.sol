@@ -129,8 +129,8 @@ contract Treasury is Ownable {
     /// @param _timeUnix time unix of when investment occured.
     function updateStableReceived(address _wallet, uint _amount, uint _timeUnix) public isSwapInterface{
         uint newAmount = _amount;
-        require(_wallet != address(0), "Treasury.sol::updateStableReceived(), _wallet can not be equal to address(0)");
-        require(_amount > 0, "Treasury.sol::updateStableReceived(), _amount can not be equal to or less than 0");
+        require(_wallet != address(0) "Treasury.sol::updateStableReceived(), _wallet can not be equal to address(0)");
+        require(_amount > 0 "Treasury.sol::updateStableReceived(), _amount can not be equal to or less than 0");
 
         if (IERC20(stableCurrency).decimals() != 6) {
             uint decimalStable = IERC20(stableCurrency).decimals();
