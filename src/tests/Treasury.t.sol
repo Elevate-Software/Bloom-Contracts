@@ -248,4 +248,32 @@ contract TreasuryTest is DSTest, Utility {
         assertEq(IERC20(USDC).balanceOf(address(treasury)), 0);
          
     }
+
+    // ~ updateBloomToken() Testing ~
+
+    function test_treasury_updateBloomToken_restrictions() public {
+        // Make sure only the owner can call this function.
+        assert(dev.try_updateBloomToken(address(treasury), address(1)));
+        assert(!joe.try_updateBloomToken(address(treasury), address(1)));
+
+        // Make sure _newBloomToken is not equal to address(0).
+        assert(!dev.try_updateBloomToken(address(treasury), address(0)));
+
+        // Ensure bloomToken is not equal to _newBloomToken address.
+        assert(!dev.try_updateBloomToken(address(treasury), address(1)));
+    }
+
+    function test_treasury_updateBloomToken_state_changes() public {
+        // Pre-State change.
+        // Ensure bloomToken is equal to bloomToken.
+        assertEq(treasury.bloomToken(), address(bloomToken));
+
+        // State-Change.
+        // Set _newBloomToken to address(1).
+        assert(dev.try_updateBloomToken(address(treasury), address(1)));
+
+        // Post-State change.
+        // Ensures address(1) is equal to _newBloomToken.
+        assertEq(treasury.bloomToken(), address(1));
+    }
 }

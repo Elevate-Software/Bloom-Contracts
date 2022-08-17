@@ -141,5 +141,9 @@ contract Actor {
         (ok,) = address(treasury).call(abi.encodeWithSignature(sig, _token));
     }
 
+    function try_updateBloomToken(address treasury, address _token) external returns (bool ok) {
+        string memory sig = "updateBloomToken(address)";
+        (ok,) = address(treasury).call(abi.encodeWithSignature(sig, _token));
+    }
 
 }

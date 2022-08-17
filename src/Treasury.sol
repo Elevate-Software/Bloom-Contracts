@@ -212,7 +212,8 @@ contract Treasury is Ownable {
     /// @notice updates bloomToken to _newBloomToken.
     /// @param _newBloomToken stores new bloomToken.
     function updateBloomToken(address _newBloomToken) external onlyOwner() {
-        require(bloomToken != _newBloomToken, "Treasury.sol::updateBloomToken() token address is already set");
+        require(_newBloomToken != address(0), "Treasury.sol::updateBloomToken(), _newBloomToken can not equal address(0).");
+        require(bloomToken != _newBloomToken, "Treasury.sol::updateBloomToken() bloomToken can not be equal to _newBloomToken.");
         bloomToken = _newBloomToken;
     }
 
