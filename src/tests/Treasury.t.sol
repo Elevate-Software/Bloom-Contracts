@@ -76,6 +76,7 @@ contract TreasuryTest is DSTest, Utility {
         assertEq(treasury.getDividendLibrary(address(1)).length, 0);
         assertEq(IERC20(address(bloomToken)).totalSupply(), 0);
         assertEq(IERC20(address(bloomToken)).balanceOf(address(1)), 0);
+        
 
         // SwapInterface is going to call updateStableRecieved().
         assert(swapInterface.try_updateStableReceived(address(treasury),address(1),1674 * USD, block.timestamp));

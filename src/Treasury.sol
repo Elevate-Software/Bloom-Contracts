@@ -129,6 +129,8 @@ contract Treasury is Ownable {
     /// @param _timeUnix time unix of when investment occured.
     function updateStableReceived(address _wallet, uint _amount, uint _timeUnix) public isSwapInterface{
         uint newAmount = _amount;
+        require(_wallet != address(0), "Treasury.sol::updateStableReceived(), _wallet can not be equal to address(0)");
+        require(_amount > 0, "Treasury.sol::updateStableReceived(), _amount can not be equal to or less than 0");
 
         if (IERC20(stableCurrency).decimals() != 6) {
             uint decimalStable = IERC20(stableCurrency).decimals();
@@ -161,14 +163,14 @@ contract Treasury is Ownable {
 
     /// @notice Allows the contract owner to add authorized wallets to the authorizedUser[] array.
     /// @param _wallet contains wallet address we wish to add to the authorizesUers[] array.
-    function addAuthorizedUser(address _wallet) public onlyOwner() {
+    function addAuthorizedUser(address _wallet) external onlyOwner() {
         require(!getAuthorizedUser(_wallet), "Treasury.sol::addAuthorizedUser() wallet is already an authorizedUser");
         authorizedUsers.push(_wallet);
     }
 
     /// @notice Allows the contract owner to remove authorized wallets from the authorizedUser[] array.
     /// @param _wallet contains wallet address we wish to remove to the authorizedUsers[] array.
-    function removeAuthorizedUser(address _wallet) public onlyOwner() {
+    function removeAuthorizedUser(address _wallet) external onlyOwner() {
         require(getAuthorizedUser(_wallet), "Treasury.sol::removeAuthorizedUser() wallet does not exist within authorizedUser[]");
 
         uint gap;
