@@ -202,8 +202,8 @@ contract Treasury is Ownable {
     /// @dev    Decimal point precision of _stableCurrency cannot be less than 6.
     /// @param _stableCurrency stores stableCurrency.
     function updateStableCurrency(address _stableCurrency) public onlyOwner() {
-        require(stableCurrency != _stableCurrency, "Treasury.sol::updateStableCurrency() stableCurrency should not equal _stableCurrency.");
-        require(IERC20(_stableCurrency).decimals() >= 6, "Treasury.sol::updateStableCurrency() decimal precision of _stableCurrency needs to be >= 6.");
+        require(stableCurrency != _stableCurrency, "Treasury.sol::updateStableCurrency() stableCurrency should not equal _stableCurrency");
+        require(IERC20(_stableCurrency).decimals() >= 6, "Treasury.sol::updateStableCurrency() decimal precision of _stableCurrency needs to be >= 6");
 
         emit StableCurrencyUpdated(stableCurrency, _stableCurrency);
         stableCurrency = _stableCurrency;
@@ -212,8 +212,8 @@ contract Treasury is Ownable {
     /// @notice updates bloomToken to _newBloomToken.
     /// @param _newBloomToken stores new bloomToken.
     function updateBloomToken(address _newBloomToken) external onlyOwner() {
-        require(_newBloomToken != address(0), "Treasury.sol::updateBloomToken(), _newBloomToken can not equal address(0).");
-        require(bloomToken != _newBloomToken, "Treasury.sol::updateBloomToken() bloomToken can not be equal to _newBloomToken.");
+        require(_newBloomToken != address(0), "Treasury.sol::updateBloomToken() _newBloomToken can not equal address(0)");
+        require(bloomToken != _newBloomToken, "Treasury.sol::updateBloomToken() bloomToken can not be equal to _newBloomToken");
         bloomToken = _newBloomToken;
     }
 

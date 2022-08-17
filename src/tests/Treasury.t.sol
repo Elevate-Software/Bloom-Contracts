@@ -254,6 +254,8 @@ contract TreasuryTest is DSTest, Utility {
     function test_treasury_updateBloomToken_restrictions() public {
         // Make sure only the owner can call this function.
         assert(dev.try_updateBloomToken(address(treasury), address(1)));
+
+        // Make sure joe can not call this function.
         assert(!joe.try_updateBloomToken(address(treasury), address(1)));
 
         // Make sure _newBloomToken is not equal to address(0).
