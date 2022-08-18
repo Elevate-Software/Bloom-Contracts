@@ -76,6 +76,7 @@ contract TreasuryTest is DSTest, Utility {
         assertEq(treasury.getDividendLibrary(address(1)).length, 0);
         assertEq(IERC20(address(bloomToken)).totalSupply(), 0);
         assertEq(IERC20(address(bloomToken)).balanceOf(address(1)), 0);
+        
 
         // SwapInterface is going to call updateStableRecieved().
         assert(swapInterface.try_updateStableReceived(address(treasury),address(1),1674 * USD, block.timestamp));
@@ -276,5 +277,35 @@ contract TreasuryTest is DSTest, Utility {
         // Post-State check.
         // Make sure address(1) equals _newSwapInterface.
         assertEq(treasury.swapInterfaceContract(), address(1));
+
+    // ~ updateBloomToken() Testing ~
+
+    function test_treasury_updateBloomToken_restrictions() public {
+        // Make sure only the owner can call this function.
+        assert(dev.try_updateBloomToken(address(treasury), address(1)));
+
+        // Make sure joe can not call this function.
+        assert(!joe.try_updateBloomToken(address(treasury), address(1)));
+
+        // Make sure _newBloomToken is not equal to address(0).
+        assert(!dev.try_updateBloomToken(address(treasury), address(0)));
+
+        // Ensure bloomToken is not equal to _newBloomToken address.
+        assert(!dev.try_updateBloomToken(address(treasury), address(1)));
+    }
+
+    function test_treasury_updateBloomToken_state_changes() public {
+        // Pre-State change.
+        // Ensure bloomToken is equal to bloomToken.
+        assertEq(treasury.bloomToken(), address(bloomToken));
+
+        // State-Change.
+        // Set _newBloomToken to address(1).
+        assert(dev.try_updateBloomToken(address(treasury), address(1)));
+
+        // Post-State change.
+        // Ensures address(1) is equal to _newBloomToken.
+        assertEq(treasury.bloomToken(), address(1));
+
     }
 }

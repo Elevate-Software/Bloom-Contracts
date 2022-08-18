@@ -129,6 +129,8 @@ contract Treasury is Ownable {
     /// @param _timeUnix time unix of when investment occured.
     function updateStableReceived(address _wallet, uint _amount, uint _timeUnix) public isSwapInterface{
         uint newAmount = _amount;
+        require(_wallet != address(0), "Treasury.sol::updateStableReceived() _wallet can not be equal to address(0)");
+        require(_amount > 0, "Treasury.sol::updateStableReceived() _amount can not be equal to or less than 0");
 
         if (IERC20(stableCurrency).decimals() != 6) {
             uint decimalStable = IERC20(stableCurrency).decimals();
@@ -148,8 +150,8 @@ contract Treasury is Ownable {
     /// @param _wallet The account to mint tokens for.
     /// @param _amount The amount of Bloom tokens to mint for account.
     function mintBloom(address _wallet, uint256 _amount) internal {
-        require(_wallet != address(0), "Treasury.sol::mintBloom() cannot mint tokens to null address.");
-        require(_amount > 0, "Treasury.sol::mintBloom() _amount must be greater than 0.");
+        require(_wallet != address(0), "Treasury.sol::mintBloom() cannot mint tokens to null address");
+        require(_amount > 0, "Treasury.sol::mintBloom() _amount must be greater than 0");
 
         uint decimalsStable = IERC20(stableCurrency).decimals();
         uint decimalsBloom = IERC20(bloomToken).decimals();
@@ -161,14 +163,14 @@ contract Treasury is Ownable {
 
     /// @notice Allows the contract owner to add authorized wallets to the authorizedUser[] array.
     /// @param _wallet contains wallet address we wish to add to the authorizesUers[] array.
-    function addAuthorizedUser(address _wallet) public onlyOwner() {
+    function addAuthorizedUser(address _wallet) external onlyOwner() {
         require(!getAuthorizedUser(_wallet), "Treasury.sol::addAuthorizedUser() wallet is already an authorizedUser");
         authorizedUsers.push(_wallet);
     }
 
     /// @notice Allows the contract owner to remove authorized wallets from the authorizedUser[] array.
     /// @param _wallet contains wallet address we wish to remove to the authorizedUsers[] array.
-    function removeAuthorizedUser(address _wallet) public onlyOwner() {
+    function removeAuthorizedUser(address _wallet) external onlyOwner() {
         require(getAuthorizedUser(_wallet), "Treasury.sol::removeAuthorizedUser() wallet does not exist within authorizedUser[]");
 
         uint gap;
@@ -189,7 +191,7 @@ contract Treasury is Ownable {
     /// @param _token is the contract address of token we want to withdraw.
     function safeWithdraw(address _token) public onlyOwner() {
         uint _amount = IERC20(_token).balanceOf(address(this));
-        require(_amount > 0, "Treasury.sol::safeWithdraw(), no tokens exist within treasury");
+        require(_amount > 0, "Treasury.sol::safeWithdraw() no tokens exist within treasury");
         IERC20(_token).transfer(msg.sender, _amount);
     }
 
@@ -202,8 +204,8 @@ contract Treasury is Ownable {
     /// @dev    Decimal point precision of _stableCurrency cannot be less than 6.
     /// @param _stableCurrency stores stableCurrency.
     function updateStableCurrency(address _stableCurrency) public onlyOwner() {
-        require(stableCurrency != _stableCurrency, "Treasury.sol::updateStableCurrency() stableCurrency should not equal _stableCurrency.");
-        require(IERC20(_stableCurrency).decimals() >= 6, "Treasury.sol::updateStableCurrency() decimal precision of _stableCurrency needs to be >= 6.");
+        require(stableCurrency != _stableCurrency, "Treasury.sol::updateStableCurrency() stableCurrency should not equal _stableCurrency");
+        require(IERC20(_stableCurrency).decimals() >= 6, "Treasury.sol::updateStableCurrency() decimal precision of _stableCurrency needs to be >= 6");
 
         emit StableCurrencyUpdated(stableCurrency, _stableCurrency);
         stableCurrency = _stableCurrency;
@@ -212,7 +214,8 @@ contract Treasury is Ownable {
     /// @notice updates bloomToken to _newBloomToken.
     /// @param _newBloomToken stores new bloomToken.
     function updateBloomToken(address _newBloomToken) external onlyOwner() {
-        require(bloomToken != _newBloomToken, "Treasury.sol::updateBloomToken() token address is already set");
+        require(_newBloomToken != address(0), "Treasury.sol::updateBloomToken() _newBloomToken can not equal address(0)");
+        require(bloomToken != _newBloomToken, "Treasury.sol::updateBloomToken() bloomToken can not be equal to _newBloomToken");
         bloomToken = _newBloomToken;
     }
 
