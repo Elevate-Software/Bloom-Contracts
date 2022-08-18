@@ -144,6 +144,7 @@ contract Actor {
     function try_updateSwapInterface(address treasury, address wallet) external returns (bool ok) {
         string memory sig = "updateSwapInterface(address)";
         (ok,) = address(treasury).call(abi.encodeWithSignature(sig, wallet));
+    }
 
     function try_updateBloomToken(address treasury, address _token) external returns (bool ok) {
         string memory sig = "updateBloomToken(address)";

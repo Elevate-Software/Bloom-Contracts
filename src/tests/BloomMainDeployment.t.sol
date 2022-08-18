@@ -61,12 +61,12 @@ contract BloomMainDeploymentTest is DSTest, Utility {
     function test_BloomMainDeployment_init_state() public {
 
         // bloomToken init verification
-        assertEq(bloomToken.totalSupply(), 100000 ether);
+        assertEq(bloomToken.totalSupply(), 0 ether);
         assertEq(bloomToken.decimals(), 18);
         assertEq(bloomToken.name(), "BloomToken");
         assertEq(bloomToken.symbol(), "BLOOM");
         assertEq(bloomToken.owner(), address(dev));
-        assertEq(bloomToken.balanceOf(address(dev)), 100000 ether);
+        assertEq(bloomToken.balanceOf(address(dev)), 0 ether);
         assertEq(bloomToken.treasury(), address(treasury));
 
         // treasury init verification
@@ -81,6 +81,10 @@ contract BloomMainDeploymentTest is DSTest, Utility {
         assertEq(swapInterface.Treasury(), address(treasury));
         assertTrue(swapInterface.treasurySet());
         assertTrue(swapInterface.contractEnabled());
+    }
+
+    function test_BloomMainDeployment_invest() public {
+        
     }
 
 }
