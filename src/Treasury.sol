@@ -64,23 +64,30 @@ contract Treasury is Ownable {
     // Constructor
     // -----------
 
+        
     /// @notice Initializes Treasury.sol 
     /// @param _stableCurrency Used to store address of stablecoin used in contract (default is USDC).
     constructor (
         address _stableCurrency,
         address _swapInterface,
         address _bloomToken,
-        address _admin
-    ) {
+        address _admin  
+    )  
+    {
+        require(_stableCurrency != address(0));
+        require(_swapInterface != address(0));
+        require(_bloomToken != address(0));
+
         stableCurrency = _stableCurrency;
         swapInterfaceContract = _swapInterface;
         bloomToken = _bloomToken;
-
+        
         transferOwnership(_admin);
         authorizedUsers.push(owner());
     }
 
 
+        
     // ------
     // Events
     // ------
@@ -112,13 +119,13 @@ contract Treasury is Ownable {
     // ---------
 
     /// @notice Withdraw stableCurrency from contract to a Circle acc.
-    function withdrawToCircle() public {
+    function withdrawToCircle() external {
 
     }
 
     /// @notice Updates investment values when a BTC investment is made.
     /// @dev    Function called by python bot.
-    function updateBtcReceived() public {
+    function updateBtcReceived() external {
 
     }
 
@@ -127,7 +134,7 @@ contract Treasury is Ownable {
     /// @param _wallet   account making an investment.
     /// @param _amount   amount of stable coin received from account.
     /// @param _timeUnix time unix of when investment occured.
-    function updateStableReceived(address _wallet, uint _amount, uint _timeUnix) public isSwapInterface{
+    function updateStableReceived(address _wallet, uint _amount, uint _timeUnix) external isSwapInterface{
         uint newAmount = _amount;
         require(_wallet != address(0), "Treasury.sol::updateStableReceived() _wallet can not be equal to address(0)");
         require(_amount > 0, "Treasury.sol::updateStableReceived() _amount can not be equal to or less than 0");
@@ -173,7 +180,7 @@ contract Treasury is Ownable {
     function removeAuthorizedUser(address _wallet) external onlyOwner() {
         require(getAuthorizedUser(_wallet), "Treasury.sol::removeAuthorizedUser() wallet does not exist within authorizedUser[]");
 
-        uint gap;
+        uint gap = 0;
 
         for (uint i = 0; i < getNumOfAuthorizedUsers(); i++) {
             if (_wallet == authorizedUsers[i]) {
@@ -189,21 +196,21 @@ contract Treasury is Ownable {
 
     /// @notice Withdraws asset to owner wallet.
     /// @param _token is the contract address of token we want to withdraw.
-    function safeWithdraw(address _token) public onlyOwner() {
+    function safeWithdraw(address _token) external onlyOwner() {
         uint _amount = IERC20(_token).balanceOf(address(this));
         require(_amount > 0, "Treasury.sol::safeWithdraw() no tokens exist within treasury");
-        IERC20(_token).transfer(msg.sender, _amount);
+        assert(IERC20(_token).transfer(msg.sender, _amount));
     }
 
     /// @notice Pays dividends to the investor.
-    function payDividends() public onlyOwner() returns(uint) {
+    function payDividends() external onlyOwner() returns(uint) {
         // TODO: figure out method of dividend payouts.
     }
 
     /// @notice Updates stablecurrency to _stablecurrency.
     /// @dev    Decimal point precision of _stableCurrency cannot be less than 6.
     /// @param _stableCurrency stores stableCurrency.
-    function updateStableCurrency(address _stableCurrency) public onlyOwner() {
+    function updateStableCurrency(address _stableCurrency) external onlyOwner() {
         require(stableCurrency != _stableCurrency, "Treasury.sol::updateStableCurrency() stableCurrency should not equal _stableCurrency");
         require(IERC20(_stableCurrency).decimals() >= 6, "Treasury.sol::updateStableCurrency() decimal precision of _stableCurrency needs to be >= 6");
 
@@ -229,7 +236,7 @@ contract Treasury is Ownable {
 
     /// @notice deposits dividend payment to a depository.
     /// @param  _amntDividends stores the amount of dividends to be paid to an investor.
-    function depositDividends(uint _amntDividends) public onlyOwner() {
+    function depositDividends(uint _amntDividends) external onlyOwner() {
         // TODO: figure out method of dividend payouts.
     }
 
@@ -238,28 +245,28 @@ contract Treasury is Ownable {
 
     /// @notice Should return contract balance of stableCurrency.
     /// @return uint Amount of stableCurrency that is inside contract.
-    function balanceOfStableCurrency() public view returns (uint) {
+    function balanceOfStableCurrency() external view returns (uint) {
         return IERC20(stableCurrency).balanceOf(address(this));
     }
 
     /// @notice used to get the InvestorData of a specific wallet.
     /// @param  _wallet wallet of investor whose InvestorData we want to get.
     /// @return InvestorData returns struct of info pertaining to investor's data.
-    function getInvestorData(address _wallet) public view returns (InvestorData memory) {
+    function getInvestorData(address _wallet) external view returns (InvestorData memory) {
         return investorLibrary[_wallet];
     }
 
     /// @notice used to get InvestmentReceipt[] of a specific account.
     /// @param  _wallet wallet of investor whose InvestmentReceipt[] we want to return.
     /// @return InvestmentReceipt[] array of investments made by this wallet.
-    function getInvestmentLibrary(address _wallet) public view returns (InvestmentReceipt[] memory) {
+    function getInvestmentLibrary(address _wallet) external view returns (InvestmentReceipt[] memory) {
         return investorLibrary[_wallet].investmentLibrary;
     }
 
     /// @notice used to get DividendReceipt[] of a specific account.
     /// @param  _wallet wallet of investor whose DividendReceipt[] we want to return.
     /// @return DividendReceipt[] array of dividends received by this wallet.
-    function getDividendLibrary(address _wallet) public view returns (DividendReceipt[] memory) {
+    function getDividendLibrary(address _wallet) external view returns (DividendReceipt[] memory) {
         return investorLibrary[_wallet].dividendLibrary;
     }
 

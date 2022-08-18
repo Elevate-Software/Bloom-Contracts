@@ -277,7 +277,7 @@ contract TreasuryTest is DSTest, Utility {
         // Post-State check.
         // Make sure address(1) equals _newSwapInterface.
         assertEq(treasury.swapInterfaceContract(), address(1));
-
+    }
     // ~ updateBloomToken() Testing ~
 
     function test_treasury_updateBloomToken_restrictions() public {
@@ -304,7 +304,7 @@ contract TreasuryTest is DSTest, Utility {
         assert(dev.try_updateBloomToken(address(treasury), address(1)));
 
         // Post-State change.
-        // Ensures address(1) is equal to _newBloomToken.
+        // Ensure address(1) is equal to _newBloomToken.
         assertEq(treasury.bloomToken(), address(1));
 
     }
