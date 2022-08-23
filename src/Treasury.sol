@@ -100,6 +100,10 @@ contract Treasury is Ownable {
 
     event StableCurrencyUpdated(address currentStable, address newStable);
     
+    event swapInterfaceUpdated(address oldSwapInterface, address newSwapInterface);
+
+    
+    
 
     // ---------
     // Modifiers
@@ -185,7 +189,8 @@ contract Treasury is Ownable {
         for (uint i = 0; i < getNumOfAuthorizedUsers(); i++) {
             if (_wallet == authorizedUsers[i]) {
                 delete authorizedUsers[i];
-                gap = i;
+                gap = i;    
+                break;
             }
         }
         for (uint i = gap; i < getNumOfAuthorizedUsers() - 1; i++) {
@@ -231,6 +236,7 @@ contract Treasury is Ownable {
     function updateSwapInterface(address _newSwapInterface) external onlyOwner() {
         require(_newSwapInterface != address(0), "Treasury.sol::updateSwapInterface() _newSwapInterface address can not equal address(0)");
         require(swapInterfaceContract != _newSwapInterface, "Treasury.sol::updateSwapInterface() swapInterfaceContract can not be equal to _newSwapInterface");
+        emit swapInterfaceUpdated(swapInterfaceContract, _newSwapInterface);
         swapInterfaceContract = _newSwapInterface;
     }
 
