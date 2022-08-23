@@ -278,6 +278,7 @@ contract TreasuryTest is DSTest, Utility {
         // Make sure address(1) equals _newSwapInterface.
         assertEq(treasury.swapInterfaceContract(), address(1));
     }
+
     // ~ updateBloomToken() Testing ~
 
     function test_treasury_updateBloomToken_restrictions() public {
