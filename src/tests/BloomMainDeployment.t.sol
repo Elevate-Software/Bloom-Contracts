@@ -49,9 +49,6 @@ contract BloomMainDeploymentTest is DSTest, Utility {
         // bloomToken
         dev.try_setTreasury(address(bloomToken), address(treasury));
 
-        // treasury
-        dev.try_updateSwapInterface(address(treasury), address(swapInterface));
-
         // swapInterface
         dev.try_updateTreasury(address(swapInterface), address(treasury));
         dev.try_enableContract(address(swapInterface));
