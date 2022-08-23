@@ -109,6 +109,9 @@ contract BloomMainDeploymentTest is DSTest, Utility {
         // post-state checks
         // contracts should reflect that money has been invested.
         uint256 amountReceived = IERC20(USDC).balanceOf(swapInterface.Treasury());
+
+        emit Debug("Amount Received USDC", amountReceived);
+
         assertGt(amountReceived, 0);
 
         assertEq(IERC20(USDC).balanceOf(address(swapInterface)), 0 * USD);
