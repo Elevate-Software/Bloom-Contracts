@@ -305,7 +305,7 @@ contract TreasuryTest is DSTest, Utility {
         assert(dev.try_updateBloomToken(address(treasury), address(1)));
 
         // Post-State change.
-        // Ensures address(1) is equal to _newBloomToken.
+        // Ensure address(1) is equal to _newBloomToken.
         assertEq(treasury.bloomToken(), address(1));
 
     }
