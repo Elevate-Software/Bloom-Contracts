@@ -127,6 +127,42 @@ contract BloomMainDeploymentTest is DSTest, Utility {
 
     function test_BloomMainDeployment_investETH() public {
         
+        // Allow WETH to be swapped setup.
+        dev.try_addWalletToWhitelist(address(swapInterface), address(bob));
+        dev.try_updateTokenWhitelist(address(swapInterface), WETH, true);
+
+        // pre-state checks
+        // contracts should have no money invested.
+        assertEq(IERC20(USDC).balanceOf(swapInterface.Treasury()), 0 * USD);
+
+        assertEq(treasury.getInvestorData(address(bob)).totalAmountInvested, 0);
+        assertEq(treasury.getInvestmentLibrary(address(bob)).length, 0);
+        assertEq(treasury.getDividendLibrary(address(bob)).length, 0);
+
+        assertEq(IERC20(address(bloomToken)).totalSupply(), 0);
+        assertEq(IERC20(address(bloomToken)).balanceOf(address(bob)), 0);
+
+        // state change
+        // investor Bob calls SwapInterface.invest() to invest in the REIT.
+        assert(bob.try_investETH{value: 10 ether}(address(swapInterface)));
+
+        // post-state checks
+        // contracts should reflect that money has been invested.
+        uint256 amountReceived = IERC20(USDC).balanceOf(swapInterface.Treasury());
+        assertGt(amountReceived, 0);
+
+        assertEq(IERC20(USDC).balanceOf(address(swapInterface)), 0 * USD);
+
+        assertEq(treasury.getInvestorData(address(bob)).totalAmountInvested, amountReceived);
+        assertEq(treasury.getInvestmentLibrary(address(bob)).length, 1);
+        assertEq(treasury.getDividendLibrary(address(bob)).length, 0);
+
+        assertEq(treasury.getInvestmentLibrary(address(bob))[0].amountInvested, amountReceived);
+        assertEq(treasury.getInvestmentLibrary(address(bob))[0].timeUnix, block.timestamp);
+
+        assertEq(IERC20(address(bloomToken)).totalSupply(), amountReceived * 10**12);
+        assertEq(IERC20(address(bloomToken)).balanceOf(address(bob)), amountReceived * 10**12);
+
     }
 
 }
